@@ -1,7 +1,10 @@
-from IPython.display import display, HTML
 import time
+import contextlib
 import math
 import re
+
+from IPython.display import display, HTML
+
 
 # Created at: 23rd October 2018
 #         by: Tolga Atam
@@ -342,6 +345,13 @@ def jumpto(x, y=None):
     goto(x, y)
     if flag:
         pendown()
+
+@contextlib.contextmanager
+def teleport(x, y=None):
+    original_pos = turtle_pos
+    jumpto(x, y)
+    yield
+    jumpto(*original_pos)
 
 # switch turtle visibility to ON
 def showturtle():
