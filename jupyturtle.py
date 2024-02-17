@@ -91,9 +91,7 @@ def make_turtle(speed=DEFAULT_SPEED, width=DEFAULT_WINDOW_SIZE[0], height=DEFAUL
     global pen_width
     global turtle_shape
 
-    if isinstance(speed,int) == False or speed not in range(1, 14):
-        raise ValueError('speed must be an integer in interval [1,13]')
-    turtle_speed = speed
+    setspeed(speed)
 
     window_size = width, height
     if not (isinstance(window_size, tuple) and
@@ -151,7 +149,8 @@ def _generateSvgDrawing():
 def _updateDrawing():
     if drawing_window == None:
         raise AttributeError("Display has not been initialized yet. Call make_turtle() before using.")
-    time.sleep(_speedToSec(turtle_speed))
+    if turtle_speed:
+        time.sleep(_speedToSec(turtle_speed))
     drawing_window.update(HTML(_generateSvgDrawing()))
 
 
@@ -186,6 +185,7 @@ fd = forward # alias
 
 # makes the turtle move backward by 'units' units
 def backward(units):
+    """move the turtle backward by units"""
     if not isinstance(units, (int,float)):
         raise ValueError('units must be a number.')
     forward(-1 * units)
@@ -196,6 +196,7 @@ back = backward # alias
 
 # makes the turtle move right by 'degrees' degrees (NOT radians)
 def right(degrees):
+    """turn the turtle right by degrees"""
     global turtle_degree
 
     if not isinstance(degrees, (int,float)):
@@ -208,6 +209,7 @@ rt = right # alias
 
 # makes the turtle face a given direction
 def face(degrees):
+    """turn the turtle to a given heading in degrees"""
     global turtle_degree
 
     if not isinstance(degrees, (int,float)):
@@ -221,6 +223,7 @@ seth = face # alias
 
 # makes the turtle move right by 'degrees' degrees (NOT radians, this library does not support radians right now)
 def left(degrees):
+    """turn the turtle left by degrees"""
     if not isinstance(degrees, (int,float)):
         raise ValueError('degrees must be a number.')
     right(-1 * degrees)
@@ -229,6 +232,7 @@ lt = left
 
 # raises the pen such that following turtle moves will not cause any drawings
 def penup():
+    """raise pen; turtle will not draw"""
     global is_pen_down
 
     is_pen_down = False
@@ -240,6 +244,7 @@ up = penup # alias
 
 # lowers the pen such that following turtle moves will now cause drawings
 def pendown():
+    """lower pen; turtle will draw"""
     global is_pen_down
 
     is_pen_down = True
@@ -250,18 +255,18 @@ pd = pendown # alias
 down = pendown # alias
 
 def isdown():
+    """returns True if turtle pen is down"""
     return is_pen_down
 
 # update the speed of the moves, [1,13]
-# if argument is omitted, it returns the speed.
-def speed(speed = None):
+def setspeed(speed):
     global turtle_speed
 
     if speed is None:
         return turtle_speed
 
-    if isinstance(speed,int) == False or speed not in range(1, 14):
-        raise ValueError('speed must be an integer in the interval [1,13].')
+    if isinstance(speed,int) == False or speed not in range(14):
+        raise ValueError('speed must be integer [0...13].')
     turtle_speed = speed
     # TODO: decide if we should put the timout after changing the speed
     # _updateDrawing()
@@ -269,6 +274,7 @@ def speed(speed = None):
 
 # move the turtle to a designated 'x' x-coordinate, y-coordinate stays the same
 def setx(x):
+    """move turtle to x-coordinate; y-coordinate does not change"""
     if not isinstance(x, (int,float)):
         raise ValueError('new x position must be a number.')
     if x < 0:
@@ -276,8 +282,8 @@ def setx(x):
     _moveToNewPosition((x, turtle_pos[1]))
 
 
-# move the turtle to a designated 'y' y-coordinate, x-coordinate stays the same
 def sety(y):
+    """move turtle to y-coordinate; x-coordinate does not change"""
     if not isinstance(y, (int,float)):
         raise ValueError('new y position must be a number.')
     if y < 0:
@@ -286,34 +292,27 @@ def sety(y):
 
 
 def home():
+    """move turtle to starting position"""
     global turtle_degree
 
     turtle_degree = DEFAULT_TURTLE_DEGREE
     _moveToNewPosition( (window_size[0] // 2, window_size[1] // 2) ) # this will handle updating the drawing.
 
-# retrieve the turtle's currrent 'x' x-coordinate
 def getx():
+    """get turtle's currrent x-coordinate"""
     return(turtle_pos[0])
 
-xcor = getx # alias
-
-# retrieve the turtle's currrent 'y' y-coordinate
 def gety():
+    """get turtle's currrent y-coordinate"""
     return(turtle_pos[1])
 
-ycor = gety # alias
-
-# retrieve the turtle's current position as a (x,y) tuple vector
 def position():
+    """get turtle's current position as (x, y)"""
     return turtle_pos
 
-pos = position # alias
-
-# retrieve the turtle's current angle
 def getheading():
+    """get turtle's current heading in degrees"""
     return turtle_degree
-
-heading = getheading # alias
 
 # move the turtle to a designated 'x'-'y' coordinate
 def moveto(x, y=None):
@@ -340,6 +339,7 @@ setposition = moveto # alias
 
 # jump to a given location without leaving a trail
 def jumpto(x, y=None):
+    """jump turtle to x, y without drawing"""
     flag = is_pen_down
     penup()
     goto(x, y)
@@ -348,6 +348,7 @@ def jumpto(x, y=None):
 
 @contextlib.contextmanager
 def teleport(x, y=None):
+    """context manager to jump turtle to x, y and return original position"""
     original_pos = turtle_pos
     jumpto(x, y)
     yield
@@ -355,6 +356,7 @@ def teleport(x, y=None):
 
 # switch turtle visibility to ON
 def showturtle():
+    """make turtle visible"""
     global is_turtle_visible
 
     is_turtle_visible = True
@@ -364,6 +366,7 @@ st = showturtle # alias
 
 # switch turtle visibility to OFF
 def hideturtle():
+    """make turtle invisible"""
     global is_turtle_visible
 
     is_turtle_visible = False
@@ -423,7 +426,7 @@ def bgcolor(color = None, c2 = None, c3 = None):
 
 # change the color of the pen
 # if no params, return the current pen color
-def color(color = None, c2 = None, c3 = None):
+def pencolor(color = None, c2 = None, c3 = None):
     global pen_color
 
     if color is None:
@@ -436,7 +439,6 @@ def color(color = None, c2 = None, c3 = None):
     pen_color = _processColor(color)
     _updateDrawing()
 
-pencolor = color
 
 # change the width of the lines drawn by the turtle, in pixels
 # if the function is called without arguments, it returns the current width
