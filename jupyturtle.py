@@ -1,4 +1,5 @@
 import math
+from dataclasses import dataclass
 from typing import NamedTuple
 
 from IPython.display import display, HTML, DisplayHandle
@@ -17,18 +18,13 @@ CANVAS_SVG = """
 """
 
 
+@dataclass
 class Canvas:
-    def __init__(
-        self,
-        width: int = CANVAS_WIDTH,
-        height: int = CANVAS_HEIGHT,
-        bgcolor: str = CANVAS_BGCOLOR,
-        handle: DisplayHandle | None = None,
-    ):
-        self.width = width
-        self.height = height
-        self.bgcolor = bgcolor
-        self.handle = handle
+
+    width: int = CANVAS_WIDTH
+    height: int = CANVAS_HEIGHT
+    bgcolor: str = CANVAS_BGCOLOR
+    handle: DisplayHandle | None = None
 
     def get_SVG(self, contents):
         return CANVAS_SVG.format(
@@ -66,12 +62,16 @@ class Point(NamedTuple):
 
 commands = {}
 
+
 def command(method):
     commands[method.__name__] = method
+
     def inner(self, *args):
         method(self, *args)
         self.update()
+
     return inner
+
 
 class Turtle:
     def __init__(self, canvas: Canvas | None = None):
@@ -155,6 +155,7 @@ class Turtle:
 # TODO: refactor this reduce duplication
 
 main_turtle = None
+
 
 def get_turtle():
     global main_turtle
