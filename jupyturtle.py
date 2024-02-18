@@ -1,5 +1,6 @@
 import math
 from dataclasses import dataclass
+from textwrap import dedent
 from typing import NamedTuple
 
 from IPython.display import display, HTML, DisplayHandle
@@ -10,12 +11,14 @@ CANVAS_WIDTH = 400
 CANVAS_HEIGHT = CANVAS_WIDTH // 2
 CANVAS_BGCOLOR = '#FFF'
 
-CANVAS_SVG = """
-    <svg width="{width}" height="{height}">
-        <rect width="100%" height="100%" fill="{bgcolor}" />
-        {contents}
-    </svg>
-"""
+CANVAS_SVG = dedent("""
+<svg width="{width}" height="{height}">
+    <rect width="100%" height="100%" fill="{bgcolor}" />
+
+    {contents}
+
+</svg>
+""").rstrip()
 
 
 @dataclass
@@ -41,18 +44,17 @@ TURTLE_HEADING = 0.0
 PEN_COLOR = '#000'
 PEN_WIDTH = 2
 
-TURTLE_SVG = """
-        <g transform="rotate({heading},{x},{y}) translate({x}, {y})">
+TURTLE_SVG = dedent("""
+    <g id="{id}" transform="rotate({heading},{x},{y}) translate({x}, {y})">
         <circle stroke="{color}" stroke-width="2" fill="transparent" r="5.5" cx="0" cy="0"/>
         <polygon points="0,12 2,9 -2,9" style="fill:{color};stroke:{color};stroke-width:2"/>
-        </g>
-    """.strip()
+    </g>
+""").rstrip()
 
-LINE_SVG = """
+LINE_SVG = dedent("""
     <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke-linecap="round"
-     style="stroke:{pen_color};stroke-width:{pen_width}"/>
-
-"""
+        style="stroke:{pen_color};stroke-width:{pen_width}"/>
+""").rstrip()
 
 
 class Point(NamedTuple):
@@ -100,6 +102,7 @@ class Turtle:
         if self.visible:
             svg.append(
                 TURTLE_SVG.format(
+                    id=f'turtle{id(self):x}',
                     x=self.x,
                     y=self.y,
                     heading=self.heading - 90,
