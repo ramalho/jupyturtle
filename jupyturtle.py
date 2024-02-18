@@ -64,6 +64,15 @@ class Point(NamedTuple):
     y: int = 0
 
 
+commands = {}
+
+def command(method):
+    commands[method.__name__] = method
+    def inner(self, *args):
+        method(self, *args)
+        self.update()
+    return inner
+
 class Turtle:
     def __init__(self, canvas: Canvas | None = None):
         self.canvas = canvas if canvas else Canvas()
@@ -83,14 +92,6 @@ class Turtle:
     def y(self) -> int:
         return self.position.y
 
-    # @updater
-    def hide(self):
-        self.visible = False
-
-    # @updater
-    def show(self):
-        self.visible = True
-
     def init_vertices(self):
         self.vertices = [self.position]
 
@@ -105,20 +106,20 @@ class Turtle:
                     color=self.color,
                 )
             )
-            vertices = list(self.vertices)
-            while len(vertices) >= 2:
-                (x1, y1), (x2, y2) = vertices[:2]
-                svg.append(
-                    LINE_SVG.format(
-                        x1=x1,
-                        y1=y1,
-                        x2=x2,
-                        y2=y2,
-                        pen_color=PEN_COLOR,
-                        pen_width=PEN_WIDTH,
-                    )
+        vertices = list(self.vertices)
+        while len(vertices) >= 2:
+            (x1, y1), (x2, y2) = vertices[:2]
+            svg.append(
+                LINE_SVG.format(
+                    x1=x1,
+                    y1=y1,
+                    x2=x2,
+                    y2=y2,
+                    pen_color=PEN_COLOR,
+                    pen_width=PEN_WIDTH,
                 )
-                del vertices[0]
+            )
+            del vertices[0]
         return self.canvas.get_SVG('\n'.join(svg))
 
     def display(self):
@@ -127,6 +128,15 @@ class Turtle:
     def update(self):
         self.canvas.handle.update(HTML(self.get_SVG()))
 
+    @command
+    def hide(self):
+        self.visible = False
+
+    @command
+    def show(self):
+        self.visible = True
+
+    @command
     def forward(self, units: int):
         angle = math.radians(self.heading)
         self.position = Point(
@@ -134,11 +144,10 @@ class Turtle:
             y=round(self.y + units * math.sin(angle)),
         )
         self.vertices.append(self.position)
-        self.update()
 
+    @command
     def left(self, degrees: float):
         self.heading -= degrees
-        self.update()
 
 
 # procedural API
