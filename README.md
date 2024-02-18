@@ -1,7 +1,7 @@
 # jupyturtle
 Python Turtle graphics for Jupyter notebooks
 
-For a quick demo, open [the lab notebook](lab.ipynb)
+For a quick demo, open [the lab notebook](lab.ipynb).
 
 The idea and much of the code for this module was inspired by
 [Tolga Atam](https://github.com/tolgaatam)'s
