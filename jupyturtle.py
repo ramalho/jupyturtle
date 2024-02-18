@@ -23,7 +23,7 @@ class Canvas:
         width: int = CANVAS_WIDTH,
         height: int = CANVAS_HEIGHT,
         bgcolor: str = CANVAS_BGCOLOR,
-        handle: DisplayHandle|None = None
+        handle: DisplayHandle | None = None,
     ):
         self.width = width
         self.height = height
@@ -71,8 +71,9 @@ class Turtle:
         self.heading = TURTLE_HEADING
         self.color = TURTLE_COLOR
         self.visible = True
-        self.waypoints: list[Point] = []
-        self.init_waypoints()
+        self.vertices: list[Point] = []
+        self.init_vertices()
+        self.display()
 
     @property
     def x(self) -> int:
@@ -81,29 +82,32 @@ class Turtle:
     @property
     def y(self) -> int:
         return self.position.y
-    
-    #@updater
+
+    # @updater
     def hide(self):
         self.visible = False
 
-    #@updater
+    # @updater
     def show(self):
         self.visible = True
 
-
-    def init_waypoints(self):
-        self.waypoints = [self.position]
+    def init_vertices(self):
+        self.vertices = [self.position]
 
     def get_SVG(self):
         svg = []
         if self.visible:
             svg.append(
                 TURTLE_SVG.format(
-                    x=self.x, y=self.y, heading=self.heading-90, color=self.color
+                    x=self.x,
+                    y=self.y,
+                    heading=self.heading - 90,
+                    color=self.color,
                 )
             )
-            while len(self.waypoints) >= 2:
-                (x1, y1), (x2, y2) = self.waypoints[:2]
+            vertices = list(self.vertices)
+            while len(vertices) >= 2:
+                (x1, y1), (x2, y2) = vertices[:2]
                 svg.append(
                     LINE_SVG.format(
                         x1=x1,
@@ -114,10 +118,7 @@ class Turtle:
                         pen_width=PEN_WIDTH,
                     )
                 )
-                del self.waypoints[0]
-            self.init_waypoints()
-        else:
-            "XXX TODO"
+                del vertices[0]
         return self.canvas.get_SVG('\n'.join(svg))
 
     def display(self):
@@ -129,15 +130,15 @@ class Turtle:
     def forward(self, units: int):
         angle = math.radians(self.heading)
         self.position = Point(
-            x = round(self.x + units * math.cos(angle)),
-            y = round(self.y + units * math.sin(angle)),
+            x=round(self.x + units * math.cos(angle)),
+            y=round(self.y + units * math.sin(angle)),
         )
-        self.waypoints.append(self.position)
+        self.vertices.append(self.position)
         self.update()
 
     def left(self, degrees: float):
         self.heading -= degrees
-        self.update
+        self.update()
 
 
 # procedural API
@@ -146,24 +147,24 @@ class Turtle:
 
 main_turtle = None
 
-def forward(units):
+def get_turtle():
     global main_turtle
     if not main_turtle:
         main_turtle = Turtle()
-        main_turtle.display()
-    main_turtle.forward(units)
+    return main_turtle
+
+
+def forward(units):
+    get_turtle().forward(units)
+
 
 def left(degrees):
-    global main_turtle
-    if not main_turtle:
-        main_turtle = Turtle()
-        main_turtle.display()
-    main_turtle.left(degrees)
+    get_turtle().left(degrees)
 
 
 ALIASES = dict(
-    fd = forward,
-    lt = left,
+    fd=forward,
+    lt=left,
 )
 
 globals().update(ALIASES)
