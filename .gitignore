@@ -1,3 +1,6 @@
+# modules downloaded by Think Python chapter 4 notebook
+thinkpython.py
+diagram.py
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

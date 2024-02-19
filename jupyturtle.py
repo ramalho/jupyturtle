@@ -1,4 +1,5 @@
 import math
+import time
 from dataclasses import dataclass
 from textwrap import dedent
 from typing import NamedTuple
@@ -82,7 +83,9 @@ class Turtle:
         self.heading = TURTLE_HEADING
         self.color = TURTLE_COLOR
         self.visible = True
+        self.active_pen = True
         self.vertices: list[Point] = []
+        self.delay = 0
         self.init_vertices()
         self.display()
 
@@ -129,6 +132,8 @@ class Turtle:
         self.canvas.handle = display(HTML(self.get_SVG()), display_id=True)
 
     def update(self):
+        if self.delay:
+            time.sleep(self.delay)
         self.canvas.handle.update(HTML(self.get_SVG()))
 
     @command
@@ -152,6 +157,18 @@ class Turtle:
     def left(self, degrees: float):
         self.heading -= degrees
 
+    @command
+    def right(self, degrees: float):
+        self.heading += degrees
+
+    def penup(self):
+        self.active_pen = False
+
+    def pedown(self):
+        self.active_pen = True
+
+
+
 
 # procedural API
 
@@ -167,6 +184,12 @@ def get_turtle():
     return main_turtle
 
 
+def make_turtle(delay=0):
+    global main_turtle
+    main_turtle = Turtle()
+    if delay:
+        main_turtle.delay = delay
+
 def forward(units):
     get_turtle().forward(units)
 
@@ -175,9 +198,21 @@ def left(degrees):
     get_turtle().left(degrees)
 
 
+def right(degrees):
+    get_turtle().right(degrees)
+
+
+def hide():
+    get_turtle().hide()
+
+def show():
+    get_turtle().show()
+
+
 ALIASES = dict(
     fd=forward,
     lt=left,
+    rt=right,
 )
 
 globals().update(ALIASES)
