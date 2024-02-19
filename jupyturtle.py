@@ -12,14 +12,16 @@ CANVAS_WIDTH = 400
 CANVAS_HEIGHT = CANVAS_WIDTH // 2
 CANVAS_BGCOLOR = '#FFF'
 
-CANVAS_SVG = dedent("""
+CANVAS_SVG = dedent(
+    """
 <svg width="{width}" height="{height}">
     <rect width="100%" height="100%" fill="{bgcolor}" />
 
     {contents}
 
 </svg>
-""").rstrip()
+"""
+).rstrip()
 
 
 @dataclass
@@ -39,28 +41,38 @@ class Canvas:
         )
 
 
-# defaults
-TURTLE_COLOR = '#777'
-TURTLE_HEADING = 0.0
-PEN_COLOR = '#000'
-PEN_WIDTH = 2
-
-TURTLE_SVG = dedent("""
-    <g id="{id}" transform="rotate({heading},{x},{y}) translate({x}, {y})">
-        <circle stroke="{color}" stroke-width="2" fill="transparent" r="5.5" cx="0" cy="0"/>
-        <polygon points="0,12 2,9 -2,9" style="fill:{color};stroke:{color};stroke-width:2"/>
-    </g>
-""").rstrip()
-
-LINE_SVG = dedent("""
-    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke-linecap="round"
-        style="stroke:{pen_color};stroke-width:{pen_width}"/>
-""").rstrip()
-
-
 class Point(NamedTuple):
     x: int = 0
     y: int = 0
+
+    def translated(self, dx: int, dy: int):
+        return Point(self.x + dx, self.y + dy)
+
+
+LINE_SVG = dedent(
+    """
+    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke-linecap="round"
+        style="stroke:{color};stroke-width:{width}"/>
+"""
+).rstrip()
+
+
+class Line(NamedTuple):
+    p1: Point
+    p2: Point
+    color: str
+    width: int
+
+    def get_SVG(self):
+        (x1, y1), (x2, y2) = self.p1, self.p2
+        return LINE_SVG.format(
+            x1=x1,
+            y1=y1,
+            x2=x2,
+            y2=y2,
+            color=self.color,
+            width=self.width,
+        )
 
 
 commands = {}
@@ -76,6 +88,22 @@ def command(method):
     return inner
 
 
+# defaults
+TURTLE_COLOR = '#777'
+TURTLE_HEADING = 0.0
+PEN_COLOR = '#000'
+PEN_WIDTH = 2
+
+TURTLE_SVG = dedent(
+    """
+    <g id="{id}" transform="rotate({heading},{x},{y}) translate({x}, {y})">
+        <circle stroke="{color}" stroke-width="2" fill="transparent" r="5.5" cx="0" cy="0"/>
+        <polygon points="0,12 2,9 -2,9" style="fill:{color};stroke:{color};stroke-width:2"/>
+    </g>
+"""
+).rstrip()
+
+
 class Turtle:
     def __init__(self, canvas: Canvas | None = None):
         self.canvas = canvas if canvas else Canvas()
@@ -84,7 +112,9 @@ class Turtle:
         self.color = TURTLE_COLOR
         self.visible = True
         self.active_pen = True
-        self.vertices: list[Point] = []
+        self.pen_color = PEN_COLOR
+        self.pen_width = PEN_WIDTH
+        self.lines: list[Line] = []
         self.delay = 0
         self.init_vertices()
         self.display()
@@ -112,20 +142,9 @@ class Turtle:
                     color=self.color,
                 )
             )
-        vertices = list(self.vertices)
-        while len(vertices) >= 2:
-            (x1, y1), (x2, y2) = vertices[:2]
-            svg.append(
-                LINE_SVG.format(
-                    x1=x1,
-                    y1=y1,
-                    x2=x2,
-                    y2=y2,
-                    pen_color=PEN_COLOR,
-                    pen_width=PEN_WIDTH,
-                )
-            )
-            del vertices[0]
+        for line in self.lines:
+            svg.append(line.get_SVG())
+
         return self.canvas.get_SVG('\n'.join(svg))
 
     def display(self):
@@ -147,11 +166,19 @@ class Turtle:
     @command
     def forward(self, units: int):
         angle = math.radians(self.heading)
-        self.position = Point(
-            x=round(self.x + units * math.cos(angle)),
-            y=round(self.y + units * math.sin(angle)),
-        )
-        self.vertices.append(self.position)
+        dx = round(units * math.cos(angle))
+        dy = round(units * math.sin(angle))
+        new_pos = self.position.translated(dx, dy)
+        if self.active_pen:
+            self.lines.append(
+                Line(
+                    p1=self.position,
+                    p2=new_pos,
+                    color=self.pen_color,
+                    width=self.pen_width,
+                )
+            )
+        self.position = new_pos
 
     @command
     def left(self, degrees: float):
@@ -164,10 +191,8 @@ class Turtle:
     def penup(self):
         self.active_pen = False
 
-    def pedown(self):
+    def pendown(self):
         self.active_pen = True
-
-
 
 
 # procedural API
@@ -190,6 +215,7 @@ def make_turtle(delay=0):
     if delay:
         main_turtle.delay = delay
 
+
 def forward(units):
     get_turtle().forward(units)
 
@@ -205,8 +231,16 @@ def right(degrees):
 def hide():
     get_turtle().hide()
 
+
 def show():
     get_turtle().show()
+
+
+def penup():
+    get_turtle().penup()
+
+def pendown():
+    get_turtle().pendown()
 
 
 ALIASES = dict(
