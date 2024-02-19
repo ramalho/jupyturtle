@@ -45,8 +45,8 @@ class Point(NamedTuple):
     x: int = 0
     y: int = 0
 
-    def translated(self, dx: int, dy: int):
-        return Point(self.x + dx, self.y + dy)
+    def translated(self, dx: float, dy: float):
+        return Point(round(self.x + dx), round(self.y + dy))
 
 
 LINE_SVG = dedent(
@@ -166,8 +166,8 @@ class Turtle:
     @command
     def forward(self, units: int):
         angle = math.radians(self.heading)
-        dx = round(units * math.cos(angle))
-        dy = round(units * math.sin(angle))
+        dx = units * math.cos(angle)
+        dy = units * math.sin(angle)
         new_pos = self.position.translated(dx, dy)
         if self.active_pen:
             self.lines.append(
