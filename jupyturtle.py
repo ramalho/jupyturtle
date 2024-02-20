@@ -162,16 +162,20 @@ class Turtle:
 
     @command
     def hide(self):
+        """Hide the turtle. It will still draw, but you won't see it."""
         self.visible = False
+        # every method that changes the content of the canvas must call self.update()
         self.update()
 
     @command
     def show(self):
+        """Show the turtle."""
         self.visible = True
         self.update()
 
     @command_alias('fd')
-    def forward(self, units: int):
+    def forward(self, units: float):
+        """Move the turtle forward by units, drawing if the pen is down."""
         angle = math.radians(self.heading)
         dx = units * math.cos(angle)
         dy = units * math.sin(angle)
@@ -190,20 +194,24 @@ class Turtle:
 
     @command_alias('lt')
     def left(self, degrees: float):
+        """Turn the turtle left by degrees."""
         self.heading -= degrees
         self.update()
 
     @command_alias('rt')
     def right(self, degrees: float):
+        """Turn the turtle right by degrees."""
         self.heading += degrees
         self.update()
 
     @command
     def penup(self):
+        """Lift the pen, so the turtle stops drawing."""
         self.active_pen = False
 
     @command
     def pendown(self):
+        """Lower the pen, so the turtle starts drawing."""
         self.active_pen = True
 
 
@@ -217,26 +225,29 @@ def __dir__():
     return sorted(__all__)
 
 
-main_turtle = None
+_main_turtle = None
 
 
 def make_turtle(delay=0):
-    global main_turtle
-    main_turtle = Turtle(delay)
+    global _main_turtle
+    _main_turtle = Turtle(delay)
 
 
 def _get_turtle():
-    global main_turtle
-    if not main_turtle:
-        main_turtle = Turtle()
-    return main_turtle
+    global _main_turtle
+    if not _main_turtle:
+        _main_turtle = Turtle()
+    return _main_turtle
 
 
 def _make_command(name):
+    method = getattr(Turtle, name)  # get unbound method
     def command(*args):
         turtle = _get_turtle()
-        getattr(turtle, name)(*args)
+        method(turtle, *args)
 
+    command.__name__ = name
+    command.__doc__ = method.__doc__
     return command
 
 
