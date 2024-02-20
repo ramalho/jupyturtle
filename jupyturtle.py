@@ -42,11 +42,11 @@ class Canvas:
 
 
 class Point(NamedTuple):
-    x: int = 0
-    y: int = 0
+    x: float = 0
+    y: float = 0
 
     def translated(self, dx: float, dy: float):
-        return Point(round(self.x + dx), round(self.y + dy))
+        return Point(self.x + dx, self.y + dy)
 
 
 LINE_SVG = dedent(
@@ -79,6 +79,7 @@ commands = {}
 
 
 def command(method):
+    """prepare method for use as a command that updates the canvas"""
     commands[method.__name__] = method
 
     def inner(self, *args):
@@ -120,11 +121,11 @@ class Turtle:
         self.display()
 
     @property
-    def x(self) -> int:
+    def x(self) -> float:
         return self.position.x
 
     @property
-    def y(self) -> int:
+    def y(self) -> float:
         return self.position.y
 
     def init_vertices(self):
@@ -164,7 +165,7 @@ class Turtle:
         self.visible = True
 
     @command
-    def forward(self, units: int):
+    def forward(self, units: float):
         angle = math.radians(self.heading)
         dx = units * math.cos(angle)
         dy = units * math.sin(angle)
@@ -197,8 +198,6 @@ class Turtle:
 
 # procedural API
 
-# TODO: refactor this reduce duplication
-
 main_turtle = None
 
 
@@ -214,6 +213,9 @@ def make_turtle(delay=0):
     main_turtle = Turtle()
     if delay:
         main_turtle.delay = delay
+
+
+# TODO: refactor these to reduce duplication
 
 
 def forward(units):
@@ -239,14 +241,6 @@ def show():
 def penup():
     get_turtle().penup()
 
+
 def pendown():
     get_turtle().pendown()
-
-
-ALIASES = dict(
-    fd=forward,
-    lt=left,
-    rt=right,
-)
-
-globals().update(ALIASES)
