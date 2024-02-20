@@ -26,7 +26,6 @@ CANVAS_SVG = dedent(
 
 @dataclass
 class Canvas:
-
     width: int = CANVAS_WIDTH
     height: int = CANVAS_HEIGHT
     bgcolor: str = CANVAS_BGCOLOR
@@ -75,18 +74,23 @@ class Line(NamedTuple):
         )
 
 
-commands = {}
+# mapping of method names to global aliases
+_commands = {}
 
 
+# decorators to build procedural API with turtle commands
 def command(method):
-    """prepare method for use as a command that updates the canvas"""
-    commands[method.__name__] = method
+    """register method for use as a top level function in procedural API"""
+    _commands[method.__name__] = []  # no alias
+    return method
 
-    def inner(self, *args):
-        method(self, *args)
-        self.update()
 
-    return inner
+def command_alias(*names):
+    def decorator(method):
+        _commands[method.__name__] = list(names)
+        return method
+
+    return decorator
 
 
 # defaults
@@ -106,7 +110,7 @@ TURTLE_SVG = dedent(
 
 
 class Turtle:
-    def __init__(self, canvas: Canvas | None = None):
+    def __init__(self, delay: int = 0, canvas: Canvas | None = None):
         self.canvas = canvas if canvas else Canvas()
         self.position = Point(self.canvas.width // 2, self.canvas.height // 2)
         self.heading = TURTLE_HEADING
@@ -116,7 +120,7 @@ class Turtle:
         self.pen_color = PEN_COLOR
         self.pen_width = PEN_WIDTH
         self.lines: list[Line] = []
-        self.delay = 0
+        self.delay = delay
         self.init_vertices()
         self.display()
 
@@ -159,13 +163,15 @@ class Turtle:
     @command
     def hide(self):
         self.visible = False
+        self.update()
 
     @command
     def show(self):
         self.visible = True
+        self.update()
 
-    @command
-    def forward(self, units: float):
+    @command_alias('fd')
+    def forward(self, units: int):
         angle = math.radians(self.heading)
         dx = units * math.cos(angle)
         dy = units * math.sin(angle)
@@ -180,67 +186,73 @@ class Turtle:
                 )
             )
         self.position = new_pos
+        self.update()
 
-    @command
+    @command_alias('lt')
     def left(self, degrees: float):
         self.heading -= degrees
+        self.update()
 
-    @command
+    @command_alias('rt')
     def right(self, degrees: float):
         self.heading += degrees
+        self.update()
 
+    @command
     def penup(self):
         self.active_pen = False
 
+    @command
     def pendown(self):
         self.active_pen = True
 
 
-# procedural API
+################################################## procedural API
+
+# _install_command() will append more names when the module loads
+__all__ = ['Turtle', 'make_turtle']
+
+
+def __dir__():
+    return sorted(__all__)
+
 
 main_turtle = None
 
 
-def get_turtle():
+def make_turtle(delay=0):
+    global main_turtle
+    main_turtle = Turtle(delay)
+
+
+def _get_turtle():
     global main_turtle
     if not main_turtle:
         main_turtle = Turtle()
     return main_turtle
 
 
-def make_turtle(delay=0):
-    global main_turtle
-    main_turtle = Turtle()
-    if delay:
-        main_turtle.delay = delay
+def _make_command(name):
+    def command(*args):
+        turtle = _get_turtle()
+        getattr(turtle, name)(*args)
+
+    return command
 
 
-# TODO: refactor these to reduce duplication
+def _install_command(name, function):
+    if name in globals():
+        raise ValueError(f'duplicate turtle command name: {name}')
+    globals()[name] = function
+    __all__.append(name)
 
 
-def forward(units):
-    get_turtle().forward(units)
+def _install_commands():
+    for name, aliases in _commands.items():
+        new_command = _make_command(name)
+        _install_command(name, new_command)
+        for alias in aliases:
+            _install_command(alias, new_command)
 
 
-def left(degrees):
-    get_turtle().left(degrees)
-
-
-def right(degrees):
-    get_turtle().right(degrees)
-
-
-def hide():
-    get_turtle().hide()
-
-
-def show():
-    get_turtle().show()
-
-
-def penup():
-    get_turtle().penup()
-
-
-def pendown():
-    get_turtle().pendown()
+_install_commands()

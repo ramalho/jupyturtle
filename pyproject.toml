@@ -1,0 +1,3 @@
+[tool.ruff.format]
+# Like Python's `repr()`, use single quotes for strings.
+quote-style = 'single'
