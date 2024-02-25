@@ -18,5 +18,5 @@ with global functions like `fd()` to move the turtle.
 The techniques are easier to understand in the didactic project
 [abacus](https://github.com/fluentpython/abacus).
 
-~~~~
+
 @ramalho
