@@ -228,7 +228,7 @@ class Turtle:
 ################################################## procedural API
 
 # _install_command() will append more names when the module loads
-__all__ = ['Turtle', 'make_turtle']
+__all__ = ['Turtle', 'make_turtle', 'get_turtle']
 
 
 def __dir__():
@@ -239,13 +239,15 @@ _main_turtle = None
 
 
 def make_turtle(delay=0):
+    """Makes and sets new _main_turtle"""
     global _main_turtle
     _main_turtle = Turtle(delay)
 
 
-def _get_turtle():
+def get_turtle():
+    """Gets _main_turtle; makes it if there's none"""
     global _main_turtle
-    if not _main_turtle:
+    if _main_turtle is None:
         _main_turtle = Turtle()
     return _main_turtle
 
