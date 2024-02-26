@@ -10,18 +10,18 @@ from IPython.display import display, HTML, DisplayHandle
 # defaults
 CANVAS_WIDTH = 400
 CANVAS_HEIGHT = CANVAS_WIDTH // 2
-CANVAS_BGCOLOR = '#FFF'
+CANVAS_BGCOLOR = 'navajowhite'
 
 CANVAS_SVG = dedent(
     """
 <svg width="{width}" height="{height}">
     <rect width="100%" height="100%" fill="{bgcolor}" />
 
-    {contents}
+{contents}
 
 </svg>
 """
-).rstrip()
+).strip()
 
 
 @dataclass
@@ -51,9 +51,8 @@ class Point(NamedTuple):
 LINE_SVG = dedent(
     """
     <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke-linecap="round"
-        style="stroke:{color};stroke-width:{width}"/>
-"""
-).rstrip()
+      style="stroke:{color};stroke-width:{width}" />"""
+).strip()
 
 
 class Line(NamedTuple):
@@ -65,10 +64,10 @@ class Line(NamedTuple):
     def get_SVG(self):
         (x1, y1), (x2, y2) = self.p1, self.p2
         return LINE_SVG.format(
-            x1=x1,
-            y1=y1,
-            x2=x2,
-            y2=y2,
+            x1=round(x1, 1),
+            y1=round(y1, 1),
+            x2=round(x2, 1),
+            y2=round(y2, 1),
             color=self.color,
             width=self.width,
         )
@@ -94,14 +93,14 @@ def command_alias(*names):
 
 
 # defaults
-TURTLE_COLOR = '#777'
-TURTLE_HEADING = 0.0
-PEN_COLOR = '#000'
+TURTLE_HEADING = 0.0  # pointing to screen left, a.k.a. "east"
+TURTLE_COLOR = 'gray'
+PEN_COLOR = 'indigo'
 PEN_WIDTH = 2
 
 TURTLE_SVG = dedent(
     """
-    <g id="{id}" transform="rotate({heading},{x},{y}) translate({x}, {y})">
+    <g transform="rotate({heading},{x},{y}) translate({x}, {y})">
         <circle stroke="{color}" stroke-width="2" fill="transparent" r="5.5" cx="0" cy="0"/>
         <polygon points="0,12 2,9 -2,9" style="fill:{color};stroke:{color};stroke-width:2"/>
     </g>
@@ -141,9 +140,9 @@ class Turtle:
             svg.append(
                 TURTLE_SVG.format(
                     id=f'turtle{id(self):x}',
-                    x=self.x,
-                    y=self.y,
-                    heading=self.heading - 90,
+                    x=round(self.x, 1),
+                    y=round(self.y, 1),
+                    heading=round(self.heading - 90, 1),
                     color=self.color,
                 )
             )
@@ -153,12 +152,15 @@ class Turtle:
         return self.canvas.get_SVG('\n'.join(svg))
 
     def display(self):
+        # TODO: issue warning if `display` did not return a handle
         self.canvas.handle = display(HTML(self.get_SVG()), display_id=True)
 
     def update(self):
-        if self.delay:
-            time.sleep(self.delay)
-        self.canvas.handle.update(HTML(self.get_SVG()))
+        # TODO: issue warning if `handle` is None
+        if h := self.canvas.handle:
+            if self.delay:
+                time.sleep(self.delay)
+            h.update(HTML(self.get_SVG()))
 
     @command
     def hide(self):
@@ -242,6 +244,7 @@ def _get_turtle():
 
 def _make_command(name):
     method = getattr(Turtle, name)  # get unbound method
+
     def command(*args):
         turtle = _get_turtle()
         method(turtle, *args)

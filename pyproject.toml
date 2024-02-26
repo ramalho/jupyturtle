@@ -1,3 +1,11 @@
+[project]
+name = "jupyturtle"
+version = "2024-02-25"
+dependencies = [
+  "pytest",
+  "ipython>=8",
+]
+
 [tool.ruff.format]
 # Like Python's `repr()`, use single quotes for strings.
 quote-style = 'single'
