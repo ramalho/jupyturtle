@@ -130,6 +130,14 @@ class Turtle:
     @property
     def y(self) -> float:
         return self.position.y
+    
+    @property
+    def heading(self) -> float:
+        return self.__heading
+    
+    @heading.setter
+    def heading(self, new_heading) -> None:
+        self.__heading = new_heading % 360.0
 
     def init_vertices(self):
         self.vertices = [self.position]
