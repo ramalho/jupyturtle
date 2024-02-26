@@ -17,6 +17,20 @@ def test_forward():
     assert t.lines[0].p2 == p2
 
 
+def test_forward_right_square():
+    t = Turtle()
+    pos = t.position
+    heading = t.heading
+    d = 42
+    sides = 4
+    for _ in range(sides):
+        t.forward(d)
+        t.right(90)
+    assert t.position == pos
+    assert t.heading == heading
+    assert len(t.lines) == 4
+
+
 def test_forward_left_forward():
     t = Turtle()
     d = 50
@@ -31,15 +45,3 @@ def test_forward_left_forward():
     assert t.lines[1].p2 == p2
 
 
-def test_forward_right_square():
-    t = Turtle()
-    pos = t.position
-    heading = t.heading
-    d = 42
-    sides = 4
-    for _ in range(sides):
-        t.forward(d)
-        t.right(90)
-    assert t.position == pos
-    assert t.heading == heading
-    assert len(t.lines) == 4
