@@ -109,7 +109,9 @@ TURTLE_SVG = dedent(
 
 
 class Turtle:
-    def __init__(self, delay: int = 0, drawing: Drawing | None = None):
+    def __init__(self, *, auto_draw = True, delay: float = 0, drawing: Drawing | None = None):
+        self.auto_draw = auto_draw
+        self.delay = delay
         self.drawing = drawing if drawing else Drawing()
         self.position = Point(self.drawing.width // 2, self.drawing.height // 2)
         self.heading = TURTLE_HEADING
@@ -119,7 +121,6 @@ class Turtle:
         self.pen_color = PEN_COLOR
         self.pen_width = PEN_WIDTH
         self.lines: list[Line] = []
-        self.delay = delay
         self.display()
 
     @property
@@ -159,10 +160,11 @@ class Turtle:
         # TODO: issue warning if `display` did not return a handle
         self.drawing.handle = display(HTML(self.get_SVG()), display_id=True)
 
+    @command
     def update(self):
         # TODO: issue warning if `handle` is None
         if h := self.drawing.handle:
-            if self.delay:
+            if self.delay and not self.auto_draw:
                 time.sleep(self.delay)
             h.update(HTML(self.get_SVG()))
 
@@ -170,14 +172,16 @@ class Turtle:
     def hide(self):
         """Hide the turtle. It will still draw, but you won't see it."""
         self.visible = False
-        # every method that changes the drawing must call self.update()
-        self.update()
+        # every method that changes the drawing must:
+        if self.auto_draw:  # check if auto_draw is enabled
+            self.update()   # if so, update the display
 
     @command
     def show(self):
         """Show the turtle."""
         self.visible = True
-        self.update()
+        if self.auto_draw:
+            self.update()
 
     @command_alias('fd')
     def forward(self, units: float):
@@ -196,19 +200,22 @@ class Turtle:
                 )
             )
         self.position = new_pos
-        self.update()
+        if self.auto_draw:
+            self.update()
 
     @command_alias('lt')
     def left(self, degrees: float):
         """Turn the turtle left by degrees."""
         self.heading -= degrees
-        self.update()
+        if self.auto_draw:
+            self.update()
 
     @command_alias('rt')
     def right(self, degrees: float):
         """Turn the turtle right by degrees."""
         self.heading += degrees
-        self.update()
+        if self.auto_draw:
+            self.update()
 
     @command
     def penup(self):
@@ -220,23 +227,20 @@ class Turtle:
         """Lower the pen, so the turtle starts drawing."""
         self.active_pen = True
 
-
-class FlyingTurtle(Turtle):
-    def update(self, do_update=False):
-        if do_update:
-            super().update()
-
     def __enter__(self):
+        self.saved_auto_draw = self.auto_draw
+        self.auto_draw = False
         return self
-
+    
     def __exit__(self, exc_type, exc_value, traceback):
-        self.update(True)
-
+        self.auto_draw = self.saved_auto_draw
+        if self.auto_draw:
+            self.update()
 
 ################################################## procedural API
 
 # _install_command() will append more names when the module loads
-__all__ = ['Turtle', 'FlyingTurtle', 'make_turtle', 'get_turtle']
+__all__ = ['Turtle', 'make_turtle', 'get_turtle']
 
 
 def __dir__():
@@ -246,17 +250,14 @@ def __dir__():
 _main_turtle = None
 
 
-def make_turtle(fly=False, delay=0):
-    """Makes and sets new _main_turtle"""
+def make_turtle(*, auto_draw=True, delay=0) -> None:
+    """Makes new Turtle and sets _main_turtle."""
     global _main_turtle
-    if fly:
-        _main_turtle = FlyingTurtle(delay)
-    else:
-        _main_turtle = Turtle(delay)
+    _main_turtle = Turtle(auto_draw=auto_draw, delay=delay)
 
 
-def get_turtle():
-    """Gets existing _main_turtle; makes one if there's none"""
+def get_turtle() -> Turtle:
+    """Gets existing _main_turtle; makes one if needed."""
     global _main_turtle
     if _main_turtle is None:
         _main_turtle = Turtle()
