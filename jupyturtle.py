@@ -129,11 +129,11 @@ class Turtle:
     @property
     def y(self) -> float:
         return self.position.y
-    
+
     @property
     def heading(self) -> float:
         return self.__heading
-    
+
     @heading.setter
     def heading(self, new_heading) -> None:
         self.__heading = new_heading % 360.0
@@ -220,17 +220,18 @@ class Turtle:
         """Lower the pen, so the turtle starts drawing."""
         self.active_pen = True
 
-class FlyingTurtle(Turtle):
 
+class FlyingTurtle(Turtle):
     def update(self, do_update=False):
         if do_update:
             super().update()
 
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
         self.update(True)
+
 
 ################################################## procedural API
 

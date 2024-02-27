@@ -1,5 +1,6 @@
 from jupyturtle import Turtle, Point
 
+
 def test_drawing_exists():
     # check that we can make a turtle and it has a drawing
     t = Turtle()
@@ -43,5 +44,3 @@ def test_forward_left_forward():
     p2 = Point(p1.x + d / 2 / 2, p1.y - sin_a * d / 2)
     assert t.lines[1].p1 == p1
     assert t.lines[1].p2 == p2
-
-
