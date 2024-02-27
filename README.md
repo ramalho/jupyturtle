@@ -10,8 +10,8 @@ via [Allen Downey](https://github.com/allendowney)'s book
 _Think Python, Third Edition_ (O'Reilly, 2024).
 
 This is a rewrite from scratch, using classes to model the turtle
-and canvas—to make it easier to test, maintain and evolve by
-avoiding numerous global variables to keep program state.
+and the drawing—to make it easier to test, maintain and evolve by
+avoiding global variables to keep program state.
 
 I used metaprogramming techniques to build the procedural API
 with global functions like `fd()` to move the turtle.

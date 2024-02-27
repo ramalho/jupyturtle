@@ -8,11 +8,11 @@ from IPython.display import display, HTML, DisplayHandle
 
 
 # defaults
-CANVAS_WIDTH = 400
-CANVAS_HEIGHT = CANVAS_WIDTH // 2
-CANVAS_BGCOLOR = 'navajowhite'
+DRAW_WIDTH = 400
+DRAW_HEIGHT = DRAW_WIDTH // 2
+DRAW_BGCOLOR = 'navajowhite'
 
-CANVAS_SVG = dedent(
+DRAW_SVG = dedent(
     """
 <svg width="{width}" height="{height}">
     <rect width="100%" height="100%" fill="{bgcolor}" />
@@ -25,14 +25,14 @@ CANVAS_SVG = dedent(
 
 
 @dataclass
-class Canvas:
-    width: int = CANVAS_WIDTH
-    height: int = CANVAS_HEIGHT
-    bgcolor: str = CANVAS_BGCOLOR
+class Drawing:
+    width: int = DRAW_WIDTH
+    height: int = DRAW_HEIGHT
+    bgcolor: str = DRAW_BGCOLOR
     handle: DisplayHandle | None = None
 
     def get_SVG(self, contents):
-        return CANVAS_SVG.format(
+        return DRAW_SVG.format(
             width=self.width,
             height=self.height,
             bgcolor=self.bgcolor,
@@ -109,9 +109,9 @@ TURTLE_SVG = dedent(
 
 
 class Turtle:
-    def __init__(self, delay: int = 0, canvas: Canvas | None = None):
-        self.canvas = canvas if canvas else Canvas()
-        self.position = Point(self.canvas.width // 2, self.canvas.height // 2)
+    def __init__(self, delay: int = 0, drawing: Drawing | None = None):
+        self.drawing = drawing if drawing else Drawing()
+        self.position = Point(self.drawing.width // 2, self.drawing.height // 2)
         self.heading = TURTLE_HEADING
         self.color = TURTLE_COLOR
         self.visible = True
@@ -120,7 +120,6 @@ class Turtle:
         self.pen_width = PEN_WIDTH
         self.lines: list[Line] = []
         self.delay = delay
-        self.init_vertices()
         self.display()
 
     @property
@@ -139,9 +138,6 @@ class Turtle:
     def heading(self, new_heading) -> None:
         self.__heading = new_heading % 360.0
 
-    def init_vertices(self):
-        self.vertices = [self.position]
-
     def get_SVG(self):
         svg = []
         if self.visible:
@@ -157,15 +153,15 @@ class Turtle:
         for line in self.lines:
             svg.append(line.get_SVG())
 
-        return self.canvas.get_SVG('\n'.join(svg))
+        return self.drawing.get_SVG('\n'.join(svg))
 
     def display(self):
         # TODO: issue warning if `display` did not return a handle
-        self.canvas.handle = display(HTML(self.get_SVG()), display_id=True)
+        self.drawing.handle = display(HTML(self.get_SVG()), display_id=True)
 
     def update(self):
         # TODO: issue warning if `handle` is None
-        if h := self.canvas.handle:
+        if h := self.drawing.handle:
             if self.delay:
                 time.sleep(self.delay)
             h.update(HTML(self.get_SVG()))
@@ -174,7 +170,7 @@ class Turtle:
     def hide(self):
         """Hide the turtle. It will still draw, but you won't see it."""
         self.visible = False
-        # every method that changes the content of the canvas must call self.update()
+        # every method that changes the drawing must call self.update()
         self.update()
 
     @command
@@ -224,11 +220,22 @@ class Turtle:
         """Lower the pen, so the turtle starts drawing."""
         self.active_pen = True
 
+class FlyingTurtle(Turtle):
+
+    def update(self, do_update=False):
+        if do_update:
+            super().update()
+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.update(True)
 
 ################################################## procedural API
 
 # _install_command() will append more names when the module loads
-__all__ = ['Turtle', 'make_turtle', 'get_turtle']
+__all__ = ['Turtle', 'FlyingTurtle', 'make_turtle', 'get_turtle']
 
 
 def __dir__():
@@ -238,10 +245,13 @@ def __dir__():
 _main_turtle = None
 
 
-def make_turtle(delay=0):
+def make_turtle(fly=False, delay=0):
     """Makes and sets new _main_turtle"""
     global _main_turtle
-    _main_turtle = Turtle(delay)
+    if fly:
+        _main_turtle = FlyingTurtle(delay)
+    else:
+        _main_turtle = Turtle(delay)
 
 
 def get_turtle():
@@ -256,7 +266,7 @@ def _make_command(name):
     method = getattr(Turtle, name)  # get unbound method
 
     def command(*args):
-        turtle = _get_turtle()
+        turtle = get_turtle()
         method(turtle, *args)
 
     command.__name__ = name
