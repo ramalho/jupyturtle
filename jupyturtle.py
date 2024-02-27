@@ -109,7 +109,9 @@ TURTLE_SVG = dedent(
 
 
 class Turtle:
-    def __init__(self, *, auto_draw = True, delay: float = 0, drawing: Drawing | None = None):
+    def __init__(
+        self, *, auto_draw=True, delay: float = 0, drawing: Drawing | None = None
+    ):
         self.auto_draw = auto_draw
         self.delay = delay
         self.drawing = drawing if drawing else Drawing()
@@ -174,7 +176,7 @@ class Turtle:
         self.visible = False
         # every method that changes the drawing must:
         if self.auto_draw:  # check if auto_draw is enabled
-            self.update()   # if so, update the display
+            self.update()  # if so, update the display
 
     @command
     def show(self):
@@ -231,11 +233,12 @@ class Turtle:
         self.saved_auto_draw = self.auto_draw
         self.auto_draw = False
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback):
         self.auto_draw = self.saved_auto_draw
         if self.auto_draw:
             self.update()
+
 
 ################################################## procedural API
 
