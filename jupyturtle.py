@@ -256,7 +256,7 @@ def make_turtle(fly=False, delay=0):
 
 
 def get_turtle():
-    """Gets _main_turtle; makes it if there's none"""
+    """Gets existing _main_turtle; makes one if there's none"""
     global _main_turtle
     if _main_turtle is None:
         _main_turtle = Turtle()
