@@ -10,7 +10,8 @@ from IPython.display import display, HTML, DisplayHandle
 # defaults
 DRAW_WIDTH = 400
 DRAW_HEIGHT = DRAW_WIDTH // 2
-DRAW_BGCOLOR = 'navajowhite'
+DRAW_BGCOLOR = '#F3F3F7'  # "anti-flash white" (non-standard name)
+
 
 DRAW_SVG = dedent(
     """
@@ -94,9 +95,10 @@ def command_alias(*names):
 
 # defaults
 TURTLE_HEADING = 0.0  # pointing to screen left, a.k.a. "east"
-TURTLE_COLOR = 'gray'
-PEN_COLOR = 'indigo'
+TURTLE_COLOR = '#63A375'  # "mint" (non-standard name)
+PEN_COLOR = '#663399'  # rebeccapurple https://www.w3.org/TR/css-color-4/#valdef-color-rebeccapurple
 PEN_WIDTH = 2
+
 
 TURTLE_SVG = dedent(
     """
@@ -143,6 +145,8 @@ class Turtle:
 
     def get_SVG(self):
         svg = []
+        for line in self.lines:
+            svg.append(line.get_SVG())
         if self.visible:
             svg.append(
                 TURTLE_SVG.format(
@@ -153,8 +157,6 @@ class Turtle:
                     color=self.color,
                 )
             )
-        for line in self.lines:
-            svg.append(line.get_SVG())
 
         return self.drawing.get_SVG('\n'.join(svg))
 
@@ -166,7 +168,7 @@ class Turtle:
     def update(self):
         # TODO: issue warning if `handle` is None
         if h := self.drawing.handle:
-            if self.delay and not self.auto_draw:
+            if self.delay and self.auto_draw:
                 time.sleep(self.delay)
             h.update(HTML(self.get_SVG()))
 
@@ -253,10 +255,13 @@ def __dir__():
 _main_turtle = None
 
 
-def make_turtle(*, auto_draw=True, delay=0) -> None:
+def make_turtle(
+    *, auto_draw=True, delay=0, width=DRAW_WIDTH, height=DRAW_HEIGHT
+) -> None:
     """Makes new Turtle and sets _main_turtle."""
     global _main_turtle
-    _main_turtle = Turtle(auto_draw=auto_draw, delay=delay)
+    drawing = Drawing(width=width, height=height)
+    _main_turtle = Turtle(auto_draw=auto_draw, delay=delay, drawing=drawing)
 
 
 def get_turtle() -> Turtle:
