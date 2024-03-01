@@ -66,9 +66,15 @@ TURTLE_SVG = dedent(
 
 
 class Turtle:
-    def __init__(self, *, delay: float = TURTLE_DELAY, canvas: MultiCanvas | None = None):
+    def __init__(
+        self, *, delay: float = TURTLE_DELAY, canvas: MultiCanvas | None = None
+    ):
         self.delay = delay
-        self.canvas = canvas if canvas else MultiCanvas(3, width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
+        if canvas:
+            assert isinstance(canvas, MultiCanvas)
+            self.canvas = canvas
+        else:
+            self.canvas = MultiCanvas(3, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, sync_image_data=True)
         try:
             self.background = self.canvas[0]
             self.drawing = self.canvas[1]
@@ -83,7 +89,8 @@ class Turtle:
         self.pen_color = PEN_COLOR
         self.pen_width = PEN_WIDTH
         self.prepare_layers()
-        self.draw()
+        if self.visible:
+            self.draw()
         display(self.canvas)
 
     def prepare_layers(self):
@@ -116,12 +123,11 @@ class Turtle:
         self.foreground.line_width = TURTLE_THICKNESS
         self.foreground.stroke_style = self.color
         self.foreground.fill_style = self.color
-        head_x = x + 7.5 * math.cos(math.radians(self.heading))
-        head_y = y + 7.5 * math.sin(math.radians(self.heading))
+        head_x = x + 7 * math.cos(math.radians(self.heading))
+        head_y = y + 7 * math.sin(math.radians(self.heading))
         self.foreground.clear()
-        self.foreground.stroke_circle(x+.5, y+.5, 5)
+        self.foreground.stroke_circle(x + 0.5, y + 0.5, 5)
         self.foreground.stroke_circle(head_x, head_y, 1)
-
 
     @command
     def hide(self):
@@ -145,7 +151,8 @@ class Turtle:
         if self.pen_is_down:
             self.drawing.stroke_line(self.x, self.y, new_pos.x, new_pos.y)
         self.position = new_pos
-        self.draw()
+        if self.visible:
+            self.draw()
         if self.delay:
             time.sleep(self.delay)
 
@@ -153,7 +160,8 @@ class Turtle:
     def left(self, degrees: float):
         """Turn the turtle left by degrees."""
         self.heading -= degrees
-        self.draw()
+        if self.visible:
+            self.draw()
         if self.delay:
             time.sleep(self.delay)
 
@@ -161,7 +169,8 @@ class Turtle:
     def right(self, degrees: float):
         """Turn the turtle right by degrees."""
         self.heading += degrees
-        self.draw()
+        if self.visible:
+            self.draw()
         if self.delay:
             time.sleep(self.delay)
 
