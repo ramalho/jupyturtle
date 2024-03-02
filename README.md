@@ -6,7 +6,8 @@ For a quick demo, open [the lab notebook](lab.ipynb).
 The idea and some of the code for this module was inspired by
 [Tolga Atam](https://github.com/tolgaatam)'s
 [ColabTurtle](https://github.com/tolgaatam/ColabTurtle/tree/master),
-via [Allen Downey](https://github.com/allendowney)'s book
+which I got to know reading a pre-print version of
+[Allen Downey](https://github.com/allendowney)'s book
 _Think Python, Third Edition_ (O'Reilly, 2024).
 
 Atam's best idea was to use SVG for drawing, which makes the
