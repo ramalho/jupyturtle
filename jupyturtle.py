@@ -96,6 +96,7 @@ def command_alias(*names):
 # defaults
 TURTLE_HEADING = 0.0  # pointing to screen left, a.k.a. "east"
 TURTLE_COLOR = '#63A375'  # "mint" (non-standard name)
+TURTLE_DELAY = 0.2  # pause after each visual command, in seconds
 PEN_COLOR = '#663399'  # rebeccapurple https://www.w3.org/TR/css-color-4/#valdef-color-rebeccapurple
 PEN_WIDTH = 2
 
@@ -174,7 +175,7 @@ class Turtle:
 
     @command
     def hide(self):
-        """Hide the turtle. It will still draw, but you won't see it."""
+        """Hide turtle. It will still draw, but you won't see it."""
         self.visible = False
         # every method that changes the drawing must:
         if self.auto_draw:  # check if auto_draw is enabled
@@ -182,14 +183,14 @@ class Turtle:
 
     @command
     def show(self):
-        """Show the turtle."""
+        """Show turtle."""
         self.visible = True
         if self.auto_draw:
             self.update()
 
     @command_alias('fd')
     def forward(self, units: float):
-        """Move the turtle forward by units, drawing if the pen is down."""
+        """Move turtle forward by units; leave trail if pen is down."""
         angle = math.radians(self.heading)
         dx = units * math.cos(angle)
         dy = units * math.sin(angle)
@@ -209,53 +210,54 @@ class Turtle:
 
     @command_alias('bk')
     def back(self, units: float):
-        """Move the turtle bacward by units, drawing if the pen is down."""
+        """Move turtle backward by units; leave trail if pen is down."""
         self.forward(-units)
 
     @command
     def jumpto(self, x: float, y: float):
-        """Move the turtle bacward by units, drawing if the pen is down."""
+        """Teleport turtle to x, y coordinate; leave no trail."""
         new_pos = Point(x, y)
         self.position = new_pos
 
     @command
     def moveto(self, x: float, y: float):
-        """Move the turtle forward by units, drawing if the pen is down."""
+        """Move turtle to x, y coordinate, leaving no trail."""
         new_pos = Point(x, y)
-        self.lines.append(
-            Line(
-                p1=self.position,
-                p2=new_pos,
-                color=self.pen_color,
-                width=self.pen_width,
-            )
-        )
         self.position = new_pos
+        if self.active_pen:
+            self.lines.append(
+                Line(
+                    p1=self.position,
+                    p2=new_pos,
+                    color=self.pen_color,
+                    width=self.pen_width,
+                )
+            )
         if self.auto_draw:
             self.update()
 
     @command_alias('lt')
     def left(self, degrees: float):
-        """Turn the turtle left by degrees."""
+        """Turn turtle left by degrees."""
         self.heading -= degrees
         if self.auto_draw:
             self.update()
 
     @command_alias('rt')
     def right(self, degrees: float):
-        """Turn the turtle right by degrees."""
+        """Turn turtle right by degrees."""
         self.heading += degrees
         if self.auto_draw:
             self.update()
 
     @command
     def penup(self):
-        """Lift the pen, so the turtle stops drawing."""
+        """Lift the pen, so turtle stops drawing."""
         self.active_pen = False
 
     @command
     def pendown(self):
-        """Lower the pen, so the turtle starts drawing."""
+        """Lower the pen, so turtle starts drawing."""
         self.active_pen = True
 
     def __enter__(self):
@@ -283,12 +285,13 @@ _main_turtle = None
 
 
 def make_turtle(
-    *, auto_draw=True, delay=0.2, width=DRAW_WIDTH, height=DRAW_HEIGHT
+    *, auto_draw=True, delay=TURTLE_DELAY, width=DRAW_WIDTH, height=DRAW_HEIGHT
 ) -> None:
     """Makes new Turtle and sets _main_turtle."""
     global _main_turtle
     drawing = Drawing(width=width, height=height)
     _main_turtle = Turtle(auto_draw=auto_draw, delay=delay, drawing=drawing)
+    return _main_turtle
 
 
 def get_turtle() -> Turtle:
