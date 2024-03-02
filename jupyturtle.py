@@ -8,8 +8,8 @@ from IPython.display import display, HTML, DisplayHandle
 
 
 # defaults
-DRAW_WIDTH = 400
-DRAW_HEIGHT = DRAW_WIDTH // 2
+DRAW_WIDTH = 300
+DRAW_HEIGHT = 150
 DRAW_BGCOLOR = '#F3F3F7'  # "anti-flash white" (non-standard name)
 
 
@@ -207,6 +207,33 @@ class Turtle:
         if self.auto_draw:
             self.update()
 
+    @command_alias('bk')
+    def back(self, units: float):
+        """Move the turtle bacward by units, drawing if the pen is down."""
+        self.forward(-units)
+
+    @command
+    def jumpto(self, x: float, y: float):
+        """Move the turtle bacward by units, drawing if the pen is down."""
+        new_pos = Point(x, y)
+        self.position = new_pos
+
+    @command
+    def moveto(self, x: float, y: float):
+        """Move the turtle forward by units, drawing if the pen is down."""
+        new_pos = Point(x, y)
+        self.lines.append(
+            Line(
+                p1=self.position,
+                p2=new_pos,
+                color=self.pen_color,
+                width=self.pen_width,
+            )
+        )
+        self.position = new_pos
+        if self.auto_draw:
+            self.update()
+
     @command_alias('lt')
     def left(self, degrees: float):
         """Turn the turtle left by degrees."""
@@ -256,7 +283,7 @@ _main_turtle = None
 
 
 def make_turtle(
-    *, auto_draw=True, delay=0, width=DRAW_WIDTH, height=DRAW_HEIGHT
+    *, auto_draw=True, delay=0.2, width=DRAW_WIDTH, height=DRAW_HEIGHT
 ) -> None:
     """Makes new Turtle and sets _main_turtle."""
     global _main_turtle
