@@ -169,7 +169,7 @@ class Turtle:
     def update(self):
         # TODO: issue warning if `handle` is None
         if h := self.drawing.handle:
-            if self.delay and self.auto_draw:
+            if self.delay and not self.auto_draw:
                 time.sleep(self.delay)
             h.update(HTML(self.get_SVG()))
 
