@@ -127,7 +127,8 @@ class Turtle:
         self.pen_color = PEN_COLOR
         self.pen_width = PEN_WIDTH
         self.lines: list[Line] = []
-        self.display()
+        # TODO: issue warning if `display` did not return a handle
+        self.drawing.handle = display(HTML(self.get_SVG()), display_id=True)
 
     @property
     def x(self) -> float:
@@ -177,10 +178,6 @@ class Turtle:
             )
 
         return self.drawing.get_SVG('\n'.join(svg))
-
-    def display(self):
-        # TODO: issue warning if `display` did not return a handle
-        self.drawing.handle = display(HTML(self.get_SVG()), display_id=True)
 
     @command
     def render(self):
@@ -233,8 +230,9 @@ class Turtle:
     @command
     def jumpto(self, x: float, y: float):
         """Teleport the turtle to coordinates (x, y) without drawing."""
-        new_pos = Point(x, y)
-        self.position = new_pos
+        self.position = Point(x, y)
+        if self.auto_render:
+            self.render()
 
     @command
     def moveto(self, x: float, y: float):
