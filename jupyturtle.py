@@ -1,4 +1,5 @@
 import math
+import sys
 import time
 from dataclasses import dataclass
 from textwrap import dedent
@@ -96,6 +97,7 @@ def command_alias(*names):
 # defaults
 TURTLE_HEADING = 0.0  # pointing to screen left, a.k.a. "east"
 TURTLE_COLOR = '#63A375'  # "mint" (non-standard name)
+TURTLE_DELAY = 0.2  # pause after each visual command, in seconds
 PEN_COLOR = '#663399'  # rebeccapurple https://www.w3.org/TR/css-color-4/#valdef-color-rebeccapurple
 PEN_WIDTH = 2
 
@@ -112,9 +114,9 @@ TURTLE_SVG = dedent(
 
 class Turtle:
     def __init__(
-        self, *, auto_draw=True, delay: float = 0, drawing: Drawing | None = None
+        self, *, auto_render=True, delay: float | None = None, drawing: Drawing | None = None
     ):
-        self.auto_draw = auto_draw
+        self.auto_render = auto_render
         self.delay = delay
         self.drawing = drawing if drawing else Drawing()
         self.position = Point(self.drawing.width // 2, self.drawing.height // 2)
@@ -143,6 +145,22 @@ class Turtle:
     def heading(self, new_heading) -> None:
         self.__heading = new_heading % 360.0
 
+    @property
+    def delay(self):
+        return self.__delay
+    
+    @delay.setter
+    def delay(self, s):
+        if s is None:
+            self.__delay = TURTLE_DELAY
+            return
+        if s == 0:
+            self.__delay = 0
+            return
+        if not self.auto_render:
+            print('Warning: delay is ignored when auto_render=False', file=sys.stderr)
+        self.__delay = s
+
     def get_SVG(self):
         svg = []
         for line in self.lines:
@@ -165,31 +183,31 @@ class Turtle:
         self.drawing.handle = display(HTML(self.get_SVG()), display_id=True)
 
     @command
-    def update(self):
+    def render(self):
         # TODO: issue warning if `handle` is None
         if h := self.drawing.handle:
-            if self.delay and self.auto_draw:
+            if self.delay and self.auto_render:
                 time.sleep(self.delay)
             h.update(HTML(self.get_SVG()))
 
     @command
     def hide(self):
-        """Hide the turtle. It will still draw, but you won't see it."""
+        """Hide turtle. It will still leave trail if the pen is down."""
         self.visible = False
         # every method that changes the drawing must:
-        if self.auto_draw:  # check if auto_draw is enabled
-            self.update()  # if so, update the display
+        if self.auto_render:  # check if auto_render is enabled
+            self.render()  # if so, update the display
 
     @command
     def show(self):
-        """Show the turtle."""
+        """Show turtle."""
         self.visible = True
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command_alias('fd')
     def forward(self, units: float):
-        """Move the turtle forward by units, drawing if the pen is down."""
+        """Move turtle forward by units; leave trail if pen is down."""
         angle = math.radians(self.heading)
         dx = units * math.cos(angle)
         dy = units * math.sin(angle)
@@ -204,8 +222,8 @@ class Turtle:
                 )
             )
         self.position = new_pos
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command_alias('bk')
     def back(self, units: float):
@@ -214,7 +232,7 @@ class Turtle:
 
     @command
     def jumpto(self, x: float, y: float):
-        """Move the turtle to coordinates (x, y) without drawing."""
+        """Teleport the turtle to coordinates (x, y) without drawing."""
         new_pos = Point(x, y)
         self.position = new_pos
 
@@ -232,42 +250,42 @@ class Turtle:
                 )
             )
         self.position = new_pos
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command_alias('lt')
     def left(self, degrees: float):
-        """Turn the turtle left by degrees."""
+        """Turn turtle left by degrees."""
         self.heading -= degrees
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command_alias('rt')
     def right(self, degrees: float):
-        """Turn the turtle right by degrees."""
+        """Turn turtle right by degrees."""
         self.heading += degrees
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command
     def penup(self):
-        """Lift the pen, so the turtle stops drawing."""
+        """Lift the pen, so turtle stops drawing."""
         self.active_pen = False
 
     @command
     def pendown(self):
-        """Lower the pen, so the turtle starts drawing."""
+        """Lower the pen, so turtle starts drawing."""
         self.active_pen = True
 
     def __enter__(self):
-        self.saved_auto_draw = self.auto_draw
-        self.auto_draw = False
+        self.saved_auto_render = self.auto_render
+        self.auto_render = False
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.auto_draw = self.saved_auto_draw
-        if self.auto_draw:
-            self.update()
+        self.auto_render = self.saved_auto_render
+        if self.auto_render:
+            self.render()
 
 
 ################################################## procedural API
@@ -284,12 +302,13 @@ _main_turtle = None
 
 
 def make_turtle(
-    *, auto_draw=True, delay=0.2, width=DRAW_WIDTH, height=DRAW_HEIGHT
+    *, auto_render=True, delay=None, width=DRAW_WIDTH, height=DRAW_HEIGHT
 ) -> None:
     """Makes new Turtle and sets _main_turtle."""
     global _main_turtle
     drawing = Drawing(width=width, height=height)
-    _main_turtle = Turtle(auto_draw=auto_draw, delay=delay, drawing=drawing)
+    _main_turtle = Turtle(auto_render=auto_render, delay=delay, drawing=drawing)
+    return _main_turtle
 
 
 def get_turtle() -> Turtle:
