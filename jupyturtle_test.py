@@ -31,8 +31,6 @@ def test_line_attributes():
     assert lines[0].attrib['stroke-width'] == str(PEN_WIDTH)
     assert lines[-1].attrib['color'] == t.pen_color
     assert lines[-1].attrib['stroke-width'] == str(t.pen_width)
-    root = ET.fromstring(t.get_SVG())
-    lines = root.findall(".//line")[0]
 
 
 def test_forward():

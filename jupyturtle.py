@@ -15,7 +15,7 @@ DRAW_BGCOLOR = '#F3F3F7'  # "anti-flash white" (non-standard name)
 
 
 DRAW_SVG = dedent(
-    """
+"""
 <svg width="{width}" height="{height}">
     <rect width="100%" height="100%" fill="{bgcolor}" />
 
@@ -51,9 +51,10 @@ class Point(NamedTuple):
 
 
 LINE_SVG = dedent(
-    """
-    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke-linecap="round"
-        color="{color}" stroke-width="{width}" />"""
+"""
+    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"
+        stroke="{color}" stroke-width="{width}" />
+"""
 ).strip()
 
 
@@ -103,7 +104,7 @@ PEN_WIDTH = 2
 
 
 TURTLE_SVG = dedent(
-    """
+"""
     <g transform="rotate({heading},{x},{y}) translate({x}, {y})">
         <circle stroke="{color}" stroke-width="2" fill="transparent" r="5.5" cx="0" cy="0"/>
         <polygon points="0,12 2,9 -2,9" style="fill:{color};stroke:{color};stroke-width:2"/>
