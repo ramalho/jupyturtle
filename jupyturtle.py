@@ -114,9 +114,9 @@ TURTLE_SVG = dedent(
 
 class Turtle:
     def __init__(
-        self, *, auto_draw=True, delay: float | None = None, drawing: Drawing | None = None
+        self, *, auto_render=True, delay: float | None = None, drawing: Drawing | None = None
     ):
-        self.auto_draw = auto_draw
+        self.auto_render = auto_render
         self.delay = delay
         self.drawing = drawing if drawing else Drawing()
         self.position = Point(self.drawing.width // 2, self.drawing.height // 2)
@@ -157,8 +157,8 @@ class Turtle:
         if s == 0:
             self.__delay = 0
             return
-        if not self.auto_draw:
-            print('Warning: delay is ignored when auto_draw=False', file=sys.stderr)
+        if not self.auto_render:
+            print('Warning: delay is ignored when auto_render=False', file=sys.stderr)
         self.__delay = s
 
     def get_SVG(self):
@@ -183,10 +183,10 @@ class Turtle:
         self.drawing.handle = display(HTML(self.get_SVG()), display_id=True)
 
     @command
-    def update(self):
+    def render(self):
         # TODO: issue warning if `handle` is None
         if h := self.drawing.handle:
-            if self.delay and self.auto_draw:
+            if self.delay and self.auto_render:
                 time.sleep(self.delay)
             h.update(HTML(self.get_SVG()))
 
@@ -195,15 +195,15 @@ class Turtle:
         """Hide turtle. It will still leave trail if the pen is down."""
         self.visible = False
         # every method that changes the drawing must:
-        if self.auto_draw:  # check if auto_draw is enabled
-            self.update()  # if so, update the display
+        if self.auto_render:  # check if auto_render is enabled
+            self.render()  # if so, update the display
 
     @command
     def show(self):
         """Show turtle."""
         self.visible = True
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command_alias('fd')
     def forward(self, units: float):
@@ -222,8 +222,8 @@ class Turtle:
                 )
             )
         self.position = new_pos
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command_alias('bk')
     def back(self, units: float):
@@ -250,22 +250,22 @@ class Turtle:
                     width=self.pen_width,
                 )
             )
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command_alias('lt')
     def left(self, degrees: float):
         """Turn turtle left by degrees."""
         self.heading -= degrees
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command_alias('rt')
     def right(self, degrees: float):
         """Turn turtle right by degrees."""
         self.heading += degrees
-        if self.auto_draw:
-            self.update()
+        if self.auto_render:
+            self.render()
 
     @command
     def penup(self):
@@ -278,14 +278,14 @@ class Turtle:
         self.active_pen = True
 
     def __enter__(self):
-        self.saved_auto_draw = self.auto_draw
-        self.auto_draw = False
+        self.saved_auto_render = self.auto_render
+        self.auto_render = False
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.auto_draw = self.saved_auto_draw
-        if self.auto_draw:
-            self.update()
+        self.auto_render = self.saved_auto_render
+        if self.auto_render:
+            self.render()
 
 
 ################################################## procedural API
@@ -302,12 +302,12 @@ _main_turtle = None
 
 
 def make_turtle(
-    *, auto_draw=True, delay=None, width=DRAW_WIDTH, height=DRAW_HEIGHT
+    *, auto_render=True, delay=None, width=DRAW_WIDTH, height=DRAW_HEIGHT
 ) -> None:
     """Makes new Turtle and sets _main_turtle."""
     global _main_turtle
     drawing = Drawing(width=width, height=height)
-    _main_turtle = Turtle(auto_draw=auto_draw, delay=delay, drawing=drawing)
+    _main_turtle = Turtle(auto_render=auto_render, delay=delay, drawing=drawing)
     return _main_turtle
 
 
