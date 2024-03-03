@@ -1,4 +1,5 @@
 import math
+import sys
 import time
 from dataclasses import dataclass
 from textwrap import dedent
@@ -113,7 +114,7 @@ TURTLE_SVG = dedent(
 
 class Turtle:
     def __init__(
-        self, *, auto_draw=True, delay: float = 0, drawing: Drawing | None = None
+        self, *, auto_draw=True, delay: float | None = None, drawing: Drawing | None = None
     ):
         self.auto_draw = auto_draw
         self.delay = delay
@@ -144,6 +145,22 @@ class Turtle:
     def heading(self, new_heading) -> None:
         self.__heading = new_heading % 360.0
 
+    @property
+    def delay(self):
+        return self.__delay
+    
+    @delay.setter
+    def delay(self, s):
+        if s is None:
+            self.__delay = TURTLE_DELAY
+            return
+        if s == 0:
+            self.__delay = 0
+            return
+        if not self.auto_draw:
+            print('Warning: delay is ignored when auto_draw=False', file=sys.stderr)
+        self.__delay = s
+
     def get_SVG(self):
         svg = []
         for line in self.lines:
@@ -169,13 +186,13 @@ class Turtle:
     def update(self):
         # TODO: issue warning if `handle` is None
         if h := self.drawing.handle:
-            if self.delay and not self.auto_draw:
+            if self.delay and self.auto_draw:
                 time.sleep(self.delay)
             h.update(HTML(self.get_SVG()))
 
     @command
     def hide(self):
-        """Hide turtle. It will still draw, but you won't see it."""
+        """Hide turtle. It will still leave trail if the pen is down."""
         self.visible = False
         # every method that changes the drawing must:
         if self.auto_draw:  # check if auto_draw is enabled
@@ -285,7 +302,7 @@ _main_turtle = None
 
 
 def make_turtle(
-    *, auto_draw=True, delay=TURTLE_DELAY, width=DRAW_WIDTH, height=DRAW_HEIGHT
+    *, auto_draw=True, delay=None, width=DRAW_WIDTH, height=DRAW_HEIGHT
 ) -> None:
     """Makes new Turtle and sets _main_turtle."""
     global _main_turtle
