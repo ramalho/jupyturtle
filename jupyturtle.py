@@ -227,20 +227,19 @@ class Turtle:
 
     @command_alias('bk')
     def back(self, units: float):
-        """Move turtle backward by units; leave trail if pen is down."""
+        """Move the turtle backward by units, drawing if the pen is down."""
         self.forward(-units)
 
     @command
     def jumpto(self, x: float, y: float):
-        """Teleport turtle to x, y coordinate; leave no trail."""
+        """Teleport the turtle to coordinates (x, y) without drawing."""
         new_pos = Point(x, y)
         self.position = new_pos
 
     @command
     def moveto(self, x: float, y: float):
-        """Move turtle to x, y coordinate, leaving no trail."""
+        """Move the turtle to coordinates (x, y), drawing if the pen is down."""
         new_pos = Point(x, y)
-        self.position = new_pos
         if self.active_pen:
             self.lines.append(
                 Line(
@@ -250,6 +249,7 @@ class Turtle:
                     width=self.pen_width,
                 )
             )
+        self.position = new_pos
         if self.auto_render:
             self.render()
 
