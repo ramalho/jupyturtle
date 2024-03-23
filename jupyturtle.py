@@ -6,6 +6,7 @@ Celebrating Think Python Third Edition"
 import math
 import sys
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from textwrap import dedent
 from typing import NamedTuple
@@ -93,10 +94,10 @@ def command(method):
 
 
 def command_alias(*names):
+    """same as @command, but assigning aliases to the top level function"""
     def decorator(method):
         _commands[method.__name__] = list(names)
         return method
-
     return decorator
 
 
@@ -281,6 +282,11 @@ class Turtle:
         """Lower the pen, so turtle starts drawing."""
         self.active_pen = True
 
+    @command
+    def toggle_pen(self):
+        """Lower the pen if it's up; raises if it's down."""
+        self.active_pen = not self.active_pen
+
     def __enter__(self):
         self.saved_auto_render = self.auto_render
         self.auto_render = False
@@ -295,7 +301,7 @@ class Turtle:
 ################################################## procedural API
 
 # _install_command() will append more names when the module loads
-__all__ = ['Turtle', 'make_turtle', 'get_turtle']
+__all__ = ['Turtle', 'make_turtle', 'get_turtle', 'no_pen']
 
 
 def __dir__():
@@ -321,6 +327,16 @@ def get_turtle() -> Turtle:
     if _main_turtle is None:
         _main_turtle = Turtle()
     return _main_turtle
+
+
+@contextmanager
+def no_pen():
+    turtle = get_turtle()
+    pen_state = turtle.active_pen
+    turtle.penup()
+    yield
+    if pen_state:
+        turtle.pendown()
 
 
 def _make_command(name):
