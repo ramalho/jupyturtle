@@ -1,3 +1,8 @@
+"""
+jupyturtle.py release 2024-03
+Celebrating Think Python Third Edition"
+"""
+
 import math
 import sys
 import time
