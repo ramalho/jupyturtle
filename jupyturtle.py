@@ -80,7 +80,9 @@ class Line(NamedTuple):
             color=self.color,
             width=self.width,
         )
-
+    
+class Trail(NamedTuple):
+    points: list[Point]
 
 # mapping of method names to global aliases
 _commands = {}
