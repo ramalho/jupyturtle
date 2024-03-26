@@ -6,6 +6,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# MacOS garbage
+.DS_Store
+
 # C extensions
 *.so
 

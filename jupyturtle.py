@@ -21,8 +21,8 @@ DRAW_BGCOLOR = '#F3F3F7'  # "anti-flash white" (non-standard name)
 
 
 DRAW_SVG = dedent(
-"""
-<svg width="{width}" height="{height}">
+    """
+<svg width="{width}" height="{height}" style="fill:none;">
     <rect width="100%" height="100%" fill="{bgcolor}" />
 
 {contents}
@@ -56,33 +56,29 @@ class Point(NamedTuple):
         return Point(self.x + dx, self.y + dy)
 
 
-LINE_SVG = dedent(
+PATH_SVG = dedent(
+    """
+   <path stroke="{color}" stroke-width="{width}" d="{path}" />'
+
 """
-    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}"
-        stroke="{color}" stroke-width="{width}" />
-"""
-).strip()
+).rstrip()
 
 
-class Line(NamedTuple):
-    p1: Point
-    p2: Point
+class Path(NamedTuple):
+    points: list[Point]
     color: str
     width: int
 
+    def append(self, point: Point):
+        self.points.append(point)
+
+    def __len__(self):
+        return len(self.points)
+
     def get_SVG(self):
-        (x1, y1), (x2, y2) = self.p1, self.p2
-        return LINE_SVG.format(
-            x1=round(x1, 1),
-            y1=round(y1, 1),
-            x2=round(x2, 1),
-            y2=round(y2, 1),
-            color=self.color,
-            width=self.width,
-        )
-    
-class Trail(NamedTuple):
-    points: list[Point]
+        path = 'M ' + ' '.join([f'{point.x},{point.y}' for point in self.points])
+        return PATH_SVG.format(color=self.color, width=self.width, path=path)
+
 
 # mapping of method names to global aliases
 _commands = {}
@@ -97,9 +93,11 @@ def command(method):
 
 def command_alias(*names):
     """same as @command, but assigning aliases to the top level function"""
+
     def decorator(method):
         _commands[method.__name__] = list(names)
         return method
+
     return decorator
 
 
@@ -112,7 +110,7 @@ PEN_WIDTH = 2
 
 
 TURTLE_SVG = dedent(
-"""
+    """
     <g transform="rotate({heading},{x},{y}) translate({x}, {y})">
         <circle stroke="{color}" stroke-width="2" fill="transparent" r="5.5" cx="0" cy="0"/>
         <polygon points="0,12 2,9 -2,9" style="fill:{color};stroke:{color};stroke-width:2"/>
@@ -123,7 +121,11 @@ TURTLE_SVG = dedent(
 
 class Turtle:
     def __init__(
-        self, *, auto_render=True, delay: float | None = None, drawing: Drawing | None = None
+        self,
+        *,
+        auto_render=True,
+        delay: float | None = None,
+        drawing: Drawing | None = None,
     ):
         self.auto_render = auto_render
         self.delay = delay
@@ -133,9 +135,11 @@ class Turtle:
         self.color = TURTLE_COLOR
         self.visible = True
         self.active_pen = True
-        self.pen_color = PEN_COLOR
-        self.pen_width = PEN_WIDTH
-        self.lines: list[Line] = []
+        self.__pen_color = PEN_COLOR
+        self.__pen_width = PEN_WIDTH
+        self.paths: list[Path] = [
+            Path(points=[self.position], color=PEN_COLOR, width=PEN_WIDTH)
+        ]
         # TODO: issue warning if `display` did not return a handle
         self.drawing.handle = display(HTML(self.get_SVG()), display_id=True)
 
@@ -156,9 +160,41 @@ class Turtle:
         self.__heading = new_heading % 360.0
 
     @property
+    def pen_color(self):
+        return self.__pen_color
+
+    @pen_color.setter
+    def pen_color(self, color):
+        if color == self.__pen_color:
+            return
+        self.__pen_color = color
+        new_path = Path(points=[self.position], color=color, width=self.pen_width)
+        # create new path if there is no current path or if the current path has points
+        if not self.paths or len(self.paths[-1]) > 1:
+            self.paths.append(new_path)
+        else:  # otherwise, replace the current empty path
+            self.paths[-1] = new_path
+
+    @property
+    def pen_width(self):
+        return self.__pen_width
+
+    @pen_width.setter
+    def pen_width(self, width):
+        if width == self.__pen_width:
+            return
+        self.__pen_width = width
+        new_path = Path(points=[self.position], color=self.pen_color, width=width)
+        # create new path if there is no current path or if the current path has points
+        if not self.paths or len(self.paths[-1]) > 1:
+            self.paths.append(new_path)
+        else:  # otherwise, replace the current empty path
+            self.paths[-1] = new_path
+
+    @property
     def delay(self):
         return self.__delay
-    
+
     @delay.setter
     def delay(self, s):
         if s is None:
@@ -172,9 +208,7 @@ class Turtle:
         self.__delay = s
 
     def get_SVG(self):
-        svg = []
-        for line in self.lines:
-            svg.append(line.get_SVG())
+        svg = [path.get_SVG() for path in self.paths]
         if self.visible:
             svg.append(
                 TURTLE_SVG.format(
@@ -211,25 +245,28 @@ class Turtle:
         if self.auto_render:
             self.render()
 
-    @command_alias('fd')
-    def forward(self, units: float):
-        """Move turtle forward by units; leave trail if pen is down."""
-        angle = math.radians(self.heading)
-        dx = units * math.cos(angle)
-        dy = units * math.sin(angle)
-        new_pos = self.position.translated(dx, dy)
+    @command
+    def moveto(self, x: float, y: float):
+        """Move the turtle to coordinates (x, y), drawing if the pen is down."""
+        new_pos = Point(x, y)
         if self.active_pen:
-            self.lines.append(
-                Line(
-                    p1=self.position,
-                    p2=new_pos,
-                    color=self.pen_color,
-                    width=self.pen_width,
-                )
+            self.paths[-1].append(Point(*new_pos))
+        else:
+            self.paths.append(
+                Path(points=[new_pos], color=self.pen_color, width=self.pen_width)
             )
         self.position = new_pos
         if self.auto_render:
             self.render()
+
+    @command_alias('fd')
+    def forward(self, units: float):
+        """Move turtle forward by units; draw path if pen is down."""
+        angle = math.radians(self.heading)
+        dx = units * math.cos(angle)
+        dy = units * math.sin(angle)
+        new_pos = self.position.translated(dx, dy)
+        self.moveto(*new_pos)
 
     @command_alias('bk')
     def back(self, units: float):
@@ -240,23 +277,9 @@ class Turtle:
     def jumpto(self, x: float, y: float):
         """Teleport the turtle to coordinates (x, y) without drawing."""
         self.position = Point(x, y)
-        if self.auto_render:
-            self.render()
-
-    @command
-    def moveto(self, x: float, y: float):
-        """Move the turtle to coordinates (x, y), drawing if the pen is down."""
-        new_pos = Point(x, y)
-        if self.active_pen:
-            self.lines.append(
-                Line(
-                    p1=self.position,
-                    p2=new_pos,
-                    color=self.pen_color,
-                    width=self.pen_width,
-                )
-            )
-        self.position = new_pos
+        self.paths.append(
+            Path(points=[self.position], color=self.pen_color, width=self.pen_width)
+        )
         if self.auto_render:
             self.render()
 
@@ -315,7 +338,7 @@ _main_turtle = None
 
 def make_turtle(
     *, auto_render=True, delay=None, width=DRAW_WIDTH, height=DRAW_HEIGHT
-) -> None:
+) -> Turtle:
     """Makes new Turtle and sets _main_turtle."""
     global _main_turtle
     drawing = Drawing(width=width, height=height)
