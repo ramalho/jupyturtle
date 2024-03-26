@@ -1,6 +1,6 @@
 """
-jupyturtle.py release 2024-03
-Celebrating Think Python Third Edition"
+🐢 jupyturtle.py release 2024-03-25
+Celebrating the third edition of Think Python 🐍
 """
 
 import math
@@ -22,7 +22,7 @@ DRAW_BGCOLOR = '#F3F3F7'  # "anti-flash white" (non-standard name)
 
 DRAW_SVG = dedent(
     """
-<svg width="{width}" height="{height}" style="fill:none;">
+<svg width="{width}" height="{height}" style="fill:none; stroke-linecap:round;">
     <rect width="100%" height="100%" fill="{bgcolor}" />
 
 {contents}
@@ -76,7 +76,9 @@ class Path(NamedTuple):
         return len(self.points)
 
     def get_SVG(self):
-        path = 'M ' + ' '.join([f'{point.x},{point.y}' for point in self.points])
+        path = 'M ' + ' '.join(
+            [f'{round(point.x,1):g},{round(point.y,1):g}' for point in self.points]
+        )
         return PATH_SVG.format(color=self.color, width=self.width, path=path)
 
 
@@ -326,7 +328,7 @@ class Turtle:
 ################################################## procedural API
 
 # _install_command() will append more names when the module loads
-__all__ = ['Turtle', 'make_turtle', 'get_turtle', 'no_pen']
+__all__ = ['Turtle', 'make_turtle', 'get_turtle', 'no_pen', 'set_color', 'set_width']
 
 
 def __dir__():
@@ -352,6 +354,18 @@ def get_turtle() -> Turtle:
     if _main_turtle is None:
         _main_turtle = Turtle()
     return _main_turtle
+
+
+def set_color(color: str):
+    """Set the pen color."""
+    turtle = get_turtle()
+    turtle.pen_color = color
+
+
+def set_width(width: int):
+    """Set the pen width."""
+    turtle = get_turtle()
+    turtle.pen_width = width
 
 
 @contextmanager
