@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 
 from jupyturtle import Turtle, Point, Path
-from jupyturtle import DRAW_WIDTH, DRAW_HEIGHT, PEN_COLOR, PEN_WIDTH
+from jupyturtle import DEFAULT_DRAW_WIDTH, DEFAULT_DRAW_HEIGHT, PEN_COLOR, PEN_WIDTH
 
 
 def test_drawing_exists():
@@ -23,7 +23,7 @@ def test_path_attributes():
     root = ET.fromstring(t.get_SVG())
     paths = root.findall('.//path')
     assert len(paths) == 1
-    expected = f'M {p0.x},{p0.y} {p1.x},{p1.y}'
+    expected = f'M {round(p0.x,1):g},{round(p0.y,1):g} {round(p1.x,1):g},{round(p1.y,1):g}'
     assert paths[0].attrib['d'] == expected
     assert paths[0].attrib['stroke'] == t.pen_color
     assert paths[0].attrib['stroke-width'] == str(t.pen_width)
@@ -32,7 +32,7 @@ def test_path_attributes():
 def test_forward():
     t = Turtle()
     p1 = t.position
-    start = Point(DRAW_WIDTH // 2, DRAW_HEIGHT // 2)
+    start = Point(DEFAULT_DRAW_WIDTH // 2, DEFAULT_DRAW_HEIGHT // 2)
     assert len(t.paths) == 1
     assert t.paths[0] == Path([start], color=PEN_COLOR, width=PEN_WIDTH)
     d = 100
