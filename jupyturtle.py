@@ -15,8 +15,8 @@ from IPython.display import display, HTML, DisplayHandle
 
 
 # defaults
-DRAW_WIDTH = 300
-DRAW_HEIGHT = 150
+DEFAULT_DRAW_WIDTH = 300
+DEFAULT_DRAW_HEIGHT = 150
 DRAW_BGCOLOR = '#F3F3F7'  # "anti-flash white" (non-standard name)
 
 
@@ -34,8 +34,8 @@ DRAW_SVG = dedent(
 
 @dataclass
 class Drawing:
-    width: int = DRAW_WIDTH
-    height: int = DRAW_HEIGHT
+    width: int = DEFAULT_DRAW_WIDTH
+    height: int = DEFAULT_DRAW_HEIGHT
     bgcolor: str = DRAW_BGCOLOR
     handle: DisplayHandle | None = None
 
@@ -328,7 +328,18 @@ class Turtle:
 ################################################## procedural API
 
 # _install_command() will append more names when the module loads
-__all__ = ['Turtle', 'make_turtle', 'get_turtle', 'no_pen', 'set_color', 'set_width', 'no_update', 'set_default']
+__all__ = [
+    'Turtle',
+    'make_turtle',
+    'get_turtle',
+    'no_pen',
+    'set_color',
+    'set_width',
+    'no_update',
+    'set_default',
+    'set_heading',
+    'show_SVG',
+]
 
 
 def __dir__():
@@ -339,7 +350,7 @@ _main_turtle = None
 
 
 def make_turtle(
-    *, auto_render=True, delay=None, width=DRAW_WIDTH, height=DRAW_HEIGHT
+    *, auto_render=True, delay=None, width=DEFAULT_DRAW_WIDTH, height=DEFAULT_DRAW_HEIGHT
 ) -> Turtle:
     """Makes new Turtle and sets _main_turtle."""
     global _main_turtle
@@ -368,6 +379,12 @@ def set_width(width: int):
     turtle.pen_width = width
 
 
+def set_heading(angle: float):
+    """Set turtle heading: 0 is right, 90 is up etc."""
+    turtle = get_turtle()
+    turtle.heading = angle
+
+
 @contextmanager
 def no_pen():
     turtle = get_turtle()
@@ -377,17 +394,22 @@ def no_pen():
     if pen_state:
         turtle.pendown()
 
+
 @contextmanager
 def no_update():
     with get_turtle() as t:
         yield
 
+
 def set_default(**kwargs):
-    '''set new value for all-caps “CONSTANTS”'''
+    """set new value for all-caps “CONSTANTS”"""
     for name, value in kwargs.items():
         if name != name.upper():
             raise ValueError('Argument names must be UPPER_CASE.')
         globals()[name] = value
+
+def show_SVG():
+    print(get_turtle().get_SVG())
 
 def _make_command(name):
     method = getattr(Turtle, name)  # get unbound method
