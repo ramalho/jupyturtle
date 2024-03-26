@@ -328,7 +328,7 @@ class Turtle:
 ################################################## procedural API
 
 # _install_command() will append more names when the module loads
-__all__ = ['Turtle', 'make_turtle', 'get_turtle', 'no_pen', 'set_color', 'set_width']
+__all__ = ['Turtle', 'make_turtle', 'get_turtle', 'no_pen', 'set_color', 'set_width', 'no_update', 'set_default']
 
 
 def __dir__():
@@ -377,6 +377,17 @@ def no_pen():
     if pen_state:
         turtle.pendown()
 
+@contextmanager
+def no_update():
+    with get_turtle() as t:
+        yield
+
+def set_default(**kwargs):
+    '''set new value for all-caps “CONSTANTS”'''
+    for name, value in kwargs.items():
+        if name != name.upper():
+            raise ValueError('Argument names must be UPPER_CASE.')
+        globals()[name] = value
 
 def _make_command(name):
     method = getattr(Turtle, name)  # get unbound method
