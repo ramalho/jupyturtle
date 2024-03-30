@@ -1,6 +1,5 @@
 """
-🐢 jupyturtle.py release 2024-03-25
-Celebrating the third edition of Think Python 🐍
+🐢 jupyturtle.py
 """
 
 import math
