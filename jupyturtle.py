@@ -11,7 +11,9 @@ from dataclasses import dataclass
 from textwrap import dedent
 from typing import NamedTuple
 
+from IPython.core.error import UsageError
 from IPython.core.magic import register_cell_magic
+from IPython.core.getipython import get_ipython
 from IPython.display import display, HTML, DisplayHandle
 
 
@@ -360,44 +362,6 @@ def make_turtle(
     return _main_turtle
 
 
-def get_int_args(args: list[str]) -> list[int]:
-    int_args = []
-    for arg in args:
-        try:
-            n = int(arg)
-        except ValueError:
-            continue
-        int_args.append(n)
-    return int_args
-
-
-def pop_arg(args: list[str], name: str) -> bool:
-    if name in args:
-        args.remove(name)
-        return True
-    return False
-
-
-@register_cell_magic
-def turtle(line, cell):
-    """create a new turtle before running this cell"""
-    flags = line.strip().split()
-    fast = pop_arg(flags, 'fast')
-    animate = not fast
-    int_args = get_int_args(flags)
-    match int_args:
-        case [width, height]:
-            kwargs = dict(animate=animate, width=width, height=height)
-        case [side]:
-            kwargs = dict(animate=animate, width=side, height=side)
-        case _:
-            kwargs = dict(animate=animate)
-    t = make_turtle(**kwargs)
-    exec(cell, globals(), locals())
-    if fast:
-        t.draw()
-
-
 def get_turtle() -> Turtle:
     """Gets existing _main_turtle; makes one if needed."""
     global _main_turtle
@@ -452,6 +416,8 @@ def show_SVG():
     print(get_turtle().get_SVG())
 
 
+######################################## install commands as top-level functions
+
 def _make_command(name):
     method = getattr(Turtle, name)  # get unbound method
 
@@ -480,3 +446,60 @@ def _install_commands():
 
 
 _install_commands()
+
+
+######################################## install %%turtle cell magic
+
+def pop_int_args(args: list[str], expected_at_most: int) -> list[int]:
+    int_like_args = []
+    for arg in args:
+        try:
+            int(arg)
+        except ValueError:
+            continue
+        else:
+            int_like_args.append(arg)
+            if len(int_like_args) == expected_at_most:
+                break
+    for arg in int_like_args:
+        args.remove(arg)
+    return [int(s) for s in int_like_args]
+
+
+def pop_arg(args: list[str], name: str) -> bool:
+    if name in args:
+        args.remove(name)
+        return True
+    return False
+
+
+@register_cell_magic
+def turtle(line, cell):
+    """create a new turtle before running this cell
+    
+    usage: %%turtle arg1 arg2 arg3
+
+    All arguments are optional.
+    If one of them is the word "fast" (no quotes), animation is turned off.
+    If two of them are numbers, they set the drawing width and height in that order.
+    If only one is a number, it sets both width and height of the drawing.
+    """
+    flags = line.strip().split()
+    fast = pop_arg(flags, 'fast')
+    animate = not fast
+    int_args = pop_int_args(flags, 2)
+
+    if flags:  # unexpected flags remaining
+        raise UsageError(f'%%turtle cannot handle {flags}')
+
+    match int_args:
+        case [width, height]:
+            kwargs = dict(width=width, height=height)
+        case [side]:
+            kwargs = dict(width=side, height=side)
+        case _:
+            kwargs = {}
+    t = make_turtle(animate=animate, **kwargs)
+    exec(cell, get_ipython().user_ns)
+    if fast:
+        t.draw()
