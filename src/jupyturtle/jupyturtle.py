@@ -1,5 +1,6 @@
 """
 🐢 jupyturtle.py
+version 2024.03.30
 """
 
 import math
@@ -11,9 +12,13 @@ from textwrap import dedent
 from typing import NamedTuple
 
 from IPython.core.error import UsageError
-from IPython.core.magic import register_cell_magic
 from IPython.core.getipython import get_ipython
 from IPython.display import display, HTML, DisplayHandle
+
+if get_ipython() is None:
+    register_cell_magic = lambda f: f  # no-op
+else:
+    from IPython.core.magic import register_cell_magic
 
 
 # defaults
@@ -332,6 +337,8 @@ class Turtle:
 # _install_command() will append more names when the module loads
 __all__ = [
     'Turtle',
+    'Point',
+    'Path',
     'make_turtle',
     'get_turtle',
     'no_pen',
@@ -341,6 +348,10 @@ __all__ = [
     'set_default',
     'set_heading',
     'show_SVG',
+    'DEFAULT_DRAW_WIDTH',
+    'DEFAULT_DRAW_HEIGHT',
+    'PEN_COLOR',
+    'PEN_WIDTH',
 ]
 
 
@@ -417,6 +428,7 @@ def show_SVG():
 
 ######################################## install commands as top-level functions
 
+
 def _make_command(name):
     method = getattr(Turtle, name)  # get unbound method
 
@@ -449,6 +461,7 @@ _install_commands()
 
 ######################################## install %%turtle cell magic
 
+
 def pop_int_args(args: list[str], expected_at_most: int) -> list[int]:
     int_like_args = []
     for arg in args:
@@ -475,7 +488,7 @@ def pop_arg(args: list[str], name: str) -> bool:
 @register_cell_magic
 def turtle(line, cell):
     """create a new turtle before running this cell
-    
+
     usage: %%turtle arg1 arg2 arg3
 
     All arguments are optional.
