@@ -11,7 +11,9 @@ from dataclasses import dataclass
 from textwrap import dedent
 from typing import NamedTuple
 
+from IPython.core.magic import register_cell_magic
 from IPython.display import display, HTML, DisplayHandle
+
 
 
 # defaults
@@ -357,6 +359,18 @@ def make_turtle(
     drawing = Drawing(width=width, height=height)
     _main_turtle = Turtle(animate=animate, delay=delay, drawing=drawing)
     return _main_turtle
+
+
+@register_cell_magic
+def turtle(line, cell):
+    """create a new turtle before running this cell"""
+    flags = line.strip().split()
+    fast = 'fast' in flags
+    animate = not fast
+    make_turtle(animate=animate)
+    exec(cell, globals(), locals())
+    if fast:
+        draw()
 
 
 def get_turtle() -> Turtle:
