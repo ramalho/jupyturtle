@@ -15,7 +15,6 @@ from IPython.core.magic import register_cell_magic
 from IPython.display import display, HTML, DisplayHandle
 
 
-
 # defaults
 DEFAULT_DRAW_WIDTH = 300
 DEFAULT_DRAW_HEIGHT = 150
@@ -422,8 +421,10 @@ def set_default(**kwargs):
             raise ValueError('Argument names must be UPPER_CASE.')
         globals()[name] = value
 
+
 def show_SVG():
     print(get_turtle().get_SVG())
+
 
 def _make_command(name):
     method = getattr(Turtle, name)  # get unbound method

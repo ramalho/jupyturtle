@@ -23,7 +23,9 @@ def test_path_attributes():
     root = ET.fromstring(t.get_SVG())
     paths = root.findall('.//path')
     assert len(paths) == 1
-    expected = f'M {round(p0.x,1):g},{round(p0.y,1):g} {round(p1.x,1):g},{round(p1.y,1):g}'
+    expected = (
+        f'M {round(p0.x,1):g},{round(p0.y,1):g} {round(p1.x,1):g},{round(p1.y,1):g}'
+    )
     assert paths[0].attrib['d'] == expected
     assert paths[0].attrib['stroke'] == t.pen_color
     assert paths[0].attrib['stroke-width'] == str(t.pen_width)
