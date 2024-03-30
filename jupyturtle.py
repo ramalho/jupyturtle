@@ -360,16 +360,42 @@ def make_turtle(
     return _main_turtle
 
 
+def get_int_args(args: list[str]) -> list[int]:
+    int_args = []
+    for arg in args:
+        try:
+            n = int(arg)
+        except ValueError:
+            continue
+        int_args.append(n)
+    return int_args
+
+
+def pop_arg(args: list[str], name: str) -> bool:
+    if name in args:
+        args.remove(name)
+        return True
+    return False
+
+
 @register_cell_magic
 def turtle(line, cell):
     """create a new turtle before running this cell"""
     flags = line.strip().split()
-    fast = 'fast' in flags
+    fast = pop_arg(flags, 'fast')
     animate = not fast
-    make_turtle(animate=animate)
+    int_args = get_int_args(flags)
+    match int_args:
+        case [width, height]:
+            kwargs = dict(animate=animate, width=width, height=height)
+        case [side]:
+            kwargs = dict(animate=animate, width=side, height=side)
+        case _:
+            kwargs = dict(animate=animate)
+    t = make_turtle(**kwargs)
     exec(cell, globals(), locals())
     if fast:
-        draw()
+        t.draw()
 
 
 def get_turtle() -> Turtle:
