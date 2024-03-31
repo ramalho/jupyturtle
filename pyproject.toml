@@ -6,9 +6,9 @@ authors = [
   { name="Luciano Ramalho", email="luciano@ramalho.org" },
 ]
 dependencies = [
-  "ipython",
-  "pytest",
+  "jupyter",
   "ipython>=8",
+  "pytest",
 ]
 requires-python = ">=3.10"
 readme = "README.md"
