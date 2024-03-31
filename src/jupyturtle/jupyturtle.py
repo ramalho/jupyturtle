@@ -95,13 +95,13 @@ _commands = {}
 
 # decorators to build procedural API with turtle commands
 def command(method):
-    """register method for use as a top level function in procedural API"""
+    """Register method for use as a top level function in procedural API."""
     _commands[method.__name__] = []  # no alias
     return method
 
 
 def command_alias(*names):
-    """same as @command, but assigning aliases to the top level function"""
+    """Same as @command, but assigning aliases to the top level function. """
 
     def decorator(method):
         _commands[method.__name__] = list(names)
@@ -254,8 +254,8 @@ class Turtle:
         if self.animate:
             self.draw()
 
-    @command
-    def moveto(self, x: float, y: float):
+    @command_alias('moveto', 'mv')
+    def move_to(self, x: float, y: float):
         """Move the turtle to coordinates (x, y), drawing if the pen is down."""
         new_pos = Point(x, y)
         if self.active_pen:
@@ -276,7 +276,7 @@ class Turtle:
         dx = units * math.cos(angle)
         dy = units * math.sin(angle)
         new_pos = self.position.translated(dx, dy)
-        self.moveto(*new_pos)
+        self.move_to(*new_pos)
         if degrees:
             self.left(degrees)
 
@@ -285,8 +285,8 @@ class Turtle:
         """Move the turtle backward by units, drawing if the pen is down."""
         self.forward(-units)
 
-    @command
-    def jumpto(self, x: float, y: float):
+    @command_alias('jumpto', 'jp')
+    def jump_to(self, x: float, y: float):
         """Teleport the turtle to coordinates (x, y) without drawing."""
         self.position = Point(x, y)
         self.paths.append(
@@ -309,13 +309,13 @@ class Turtle:
         if self.animate:
             self.draw()
 
-    @command
-    def penup(self):
+    @command_alias('penup', 'pu')
+    def pen_up(self):
         """Lift the pen, so turtle stops drawing."""
         self.active_pen = False
 
-    @command
-    def pendown(self):
+    @command_alias('pendown', 'pd')
+    def pen_down(self):
         """Lower the pen, so turtle starts drawing."""
         self.active_pen = True
 
@@ -405,10 +405,10 @@ def set_heading(angle: float):
 def no_pen():
     turtle = get_turtle()
     pen_state = turtle.active_pen
-    turtle.penup()
+    turtle.pen_up()
     yield
     if pen_state:
-        turtle.pendown()
+        turtle.pen_down()
 
 
 @contextmanager
