@@ -269,13 +269,16 @@ class Turtle:
             self.draw()
 
     @command_alias('fd')
-    def forward(self, units: float):
-        """Move turtle forward by units; draw path if pen is down."""
+    def forward(self, units: float, degrees: float = 0):
+        """ Move turtle forward by units; draw path if pen is down.
+            If `degrees` is given, turn left after moving."""
         angle = math.radians(self.heading)
         dx = units * math.cos(angle)
         dy = units * math.sin(angle)
         new_pos = self.position.translated(dx, dy)
         self.moveto(*new_pos)
+        if degrees:
+            self.left(degrees)
 
     @command_alias('bk')
     def back(self, units: float):
