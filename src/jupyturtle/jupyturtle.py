@@ -101,7 +101,7 @@ def command(method):
 
 
 def command_alias(*names):
-    """Same as @command, but assigning aliases to the top level function. """
+    """Same as @command, but assigning aliases to the top level function."""
 
     def decorator(method):
         _commands[method.__name__] = list(names)
@@ -270,8 +270,8 @@ class Turtle:
 
     @command_alias('fd')
     def forward(self, units: float, degrees: float = 0):
-        """ Move turtle forward by units; draw path if pen is down.
-            If `degrees` is given, turn left after moving."""
+        """Move turtle forward by units; draw path if pen is down.
+        If `degrees` is given, turn left after moving."""
         angle = math.radians(self.heading)
         dx = units * math.cos(angle)
         dy = units * math.sin(angle)
