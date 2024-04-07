@@ -355,6 +355,7 @@ __all__ = [
     'DEFAULT_DRAW_HEIGHT',
     'PEN_COLOR',
     'PEN_WIDTH',
+    'parse_magic_args',
 ]
 
 
@@ -488,9 +489,24 @@ def pop_arg(args: list[str], name: str) -> bool:
     return False
 
 
+def parse_magic_args(line: str) -> dict:
+    flags = line.strip().split()
+    fast = pop_arg(flags, 'fast')
+    int_args = pop_int_args(flags, 2)
+    if flags:  # unexpected flags remaining
+        raise UsageError(f'%%turtle cannot handle {flags}')
+    kwargs = dict(animate=not fast)
+    match int_args:
+        case [width, height]:
+            kwargs.update(width=width, height=height)
+        case [side]:
+            kwargs.update(width=side, height=side)
+    return kwargs
+
+
 @register_cell_magic
 def turtle(line, cell):
-    """create a new turtle before running this cell
+    """create a new turtle and run this cell
 
     usage: %%turtle arg1 arg2 arg3
 
@@ -499,22 +515,8 @@ def turtle(line, cell):
     If two of them are numbers, they set the drawing width and height in that order.
     If only one is a number, it sets both width and height of the drawing.
     """
-    flags = line.strip().split()
-    fast = pop_arg(flags, 'fast')
-    animate = not fast
-    int_args = pop_int_args(flags, 2)
-
-    if flags:  # unexpected flags remaining
-        raise UsageError(f'%%turtle cannot handle {flags}')
-
-    match int_args:
-        case [width, height]:
-            kwargs = dict(width=width, height=height)
-        case [side]:
-            kwargs = dict(width=side, height=side)
-        case _:
-            kwargs = {}
-    t = make_turtle(animate=animate, **kwargs)
+    kwargs = parse_magic_args(line)
+    t = make_turtle(**kwargs)
     exec(cell, get_ipython().user_ns)
-    if fast:
+    if not t.animate:
         t.draw()

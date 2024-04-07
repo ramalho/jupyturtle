@@ -1,6 +1,8 @@
+from pytest import mark
+
 import xml.etree.ElementTree as ET
 
-from jupyturtle import Turtle, Point, Path
+from jupyturtle import Turtle, Point, Path, parse_magic_args
 from jupyturtle import DEFAULT_DRAW_WIDTH, DEFAULT_DRAW_HEIGHT, PEN_COLOR, PEN_WIDTH
 
 
@@ -73,3 +75,15 @@ def test_forward_left_forward():
     p2 = Point(p1.x + cos_a * d2, p1.y + sin_a * d2)
     assert t.paths[0].points[1] == p1
     assert t.paths[0].points[2] == p2
+
+
+@mark.parametrize(
+    'line, expected',
+    [('fast', {'animate': False}),
+     ('10', {'width': 10, 'height': 10, 'animate': True}),
+     ('200 100', {'width': 200, 'height': 100, 'animate': True}),
+     ('100 50 fast', {'width': 100, 'height': 50, 'animate': False}),
+     ],
+)
+def test_parse_magic_args(line, expected):
+    assert parse_magic_args(line) == expected
