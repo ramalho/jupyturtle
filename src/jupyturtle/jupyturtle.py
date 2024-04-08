@@ -334,6 +334,30 @@ class Turtle:
         if self.animate:
             self.draw()
 
+    @command
+    def repeat(self, times: int, *items, animate=True):
+        """Repeat functions a number of times."""
+        saved_animate = self.animate
+        self.animate = animate
+        for _ in range(times):
+            iter_items = iter(items)
+            func = next(iter_items)
+            args = []
+            while True:
+                item = next(iter_items, None)
+                if item is None or callable(item):
+                    func(*args)
+                    if item is None:
+                        break
+                    func = item
+                    args = []
+                else:
+                    args.append(item)
+        if not animate:
+            self.draw()
+        self.animate = saved_animate
+
+
 
 ################################################## procedural API
 
@@ -436,9 +460,9 @@ def show_SVG():
 def _make_command(name):
     method = getattr(Turtle, name)  # get unbound method
 
-    def command(*args):
+    def command(*args, **kwargs):
         turtle = get_turtle()
-        method(turtle, *args)
+        method(turtle, *args, **kwargs)
 
     command.__name__ = name
     command.__doc__ = method.__doc__

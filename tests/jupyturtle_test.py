@@ -77,6 +77,16 @@ def test_forward_left_forward():
     assert t.paths[0].points[2] == p2
 
 
+def test_repeat():
+    t = Turtle()
+    d = 50
+
+    t.repeat(4, t.forward, d, t.left, 90)
+    assert len(t.paths) == 1
+    assert len(t.paths[0].points) == 5
+    assert t.paths[0].points[2] == Point(DEFAULT_DRAW_WIDTH//2 + d, DEFAULT_DRAW_HEIGHT//2 - d)
+
+
 @mark.parametrize(
     'line, expected',
     [('fast', {'animate': False}),
