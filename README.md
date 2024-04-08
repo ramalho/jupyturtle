@@ -2,7 +2,7 @@
 
 Python Turtle graphics for Jupyter notebooks
 
-For a quick demo, open [the lab notebook](lab.ipynb).
+For a quick demo, open [the lab notebook](https://github.com/ramalho/jupyturtle/blob/main/notebooks/lab.ipynb).
 
 No installation required, just download the `jupyter.py`
 module to the same folder where your notebook is saved,
