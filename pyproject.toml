@@ -1,7 +1,7 @@
 [project]
 name = "jupyturtle"
 description = "Turtle graphics for Jupyter Notebooks"
-version = "2024.03.30"
+version = "2024.04.01"
 authors = [
   { name="Luciano Ramalho", email="luciano@ramalho.org" },
 ]
