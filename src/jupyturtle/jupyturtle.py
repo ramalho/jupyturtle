@@ -280,6 +280,19 @@ class Turtle:
         if degrees:
             self.left(degrees)
 
+
+    @command_alias('lp')
+    def leap(self, units: float, degrees: float = 0):
+        """Move turtle forward by units; draw path if pen is down.
+        If `degrees` is given, turn left after moving."""
+        angle = math.radians(self.heading)
+        dx = units * math.cos(angle)
+        dy = units * math.sin(angle)
+        new_pos = self.position.translated(dx, dy)
+        self.jump_to(*new_pos)
+        if degrees:
+            self.left(degrees)
+
     @command_alias('bk')
     def back(self, units: float):
         """Move the turtle backward by units, drawing if the pen is down."""
@@ -296,9 +309,11 @@ class Turtle:
             self.draw()
 
     @command_alias('lt')
-    def left(self, degrees: float):
+    def left(self, degrees: float, units: float = 0):
         """Turn turtle left by degrees."""
         self.heading -= degrees
+        if units:
+            self.forward(units)
         if self.animate:
             self.draw()
 
@@ -366,6 +381,7 @@ __all__ = [
     'Turtle',
     'Point',
     'Path',
+    'magnet',
     'make_turtle',
     'get_turtle',
     'no_pen',
@@ -440,6 +456,16 @@ def no_pen():
 def no_update():
     with get_turtle() as t:
         yield
+
+
+@contextmanager
+def magnet():
+    turtle = get_turtle()
+    position = turtle.position
+    heading = turtle.heading
+    yield
+    turtle.jump_to(*position)
+    turtle.heading = heading
 
 
 def set_default(**kwargs):
