@@ -3,7 +3,9 @@
 Python Turtle graphics for Jupyter notebooks
 
 For a quick demo, open
-[the lab notebook](https://github.com/ramalho/jupyturtle/blob/main/notebooks/lab.ipynb).
+[the lab notebook](https://github.com/ramalho/jupyturtle/blob/main/notebooks/lab.ipynb):
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ramalho/jupyturtle/2024.04.01)
 
 To use on a live Jupyter Notebook, 
 just download the `jupyter.py` file to the same folder where your notebook is saved,
