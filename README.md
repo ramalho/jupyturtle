@@ -3,13 +3,14 @@
 Python Turtle graphics for Jupyter notebooks
 
 For a quick demo, open
-[the lab notebook](https://github.com/ramalho/jupyturtle/blob/main/notebooks/lab.ipynb):
+[the lab notebook](https://github.com/ramalho/jupyturtle/blob/main/notebooks/lab.ipynb).
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ramalho/jupyturtle/2024.04.01)
-
-To use on a live Jupyter Notebook, 
+To use on a local Jupyter Notebook, 
 just download the `jupyter.py` file to the same folder where your notebook is saved,
 and import it.
+
+(I need more time to figure out how to deploy on Binder because Jupyturtle is not on conda forge yet
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ramalho/jupyturtle/2024.04.01) )
 
 
 ## Credits
