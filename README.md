@@ -14,8 +14,15 @@ To use on a local Jupyter Notebook,
 just download the `jupyturtle.py` file to the same folder where your notebook is saved,
 and import it.
 
-(I need more time to figure out how to deploy on Binder because Jupyturtle is not on conda forge yet
+(I need to figure out how to deploy on Binder because Jupyturtle is not on conda forge yet
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ramalho/jupyturtle/2024.04.01) )
+
+`jupyturtle` offers only a small subset of the features of Python's standard [`turtle`](https://docs.python.org/3/library/turtle.html)
+module.
+But it has all the features required to solve the exercises in the book
+_[Think Python, Third Edition](https://greenteapress.com/wp/think-python-3rd-edition/)_, by 
+[Allen Downey](https://github.com/allendowney).
+
 
 
 ## Credits
@@ -24,7 +31,7 @@ The idea and some of the code for this module came from
 [Tolga Atam](https://github.com/tolgaatam)'s
 [ColabTurtle](https://github.com/tolgaatam/ColabTurtle/tree/master),
 which I discovered while reviewing a pre-print version of
-[Allen Downey](https://github.com/allendowney)'s book
+[Downey](https://github.com/allendowney)'s
 _[Think Python, Third Edition](https://greenteapress.com/wp/think-python-3rd-edition/)_ (O'Reilly, 2024).
 
 
@@ -37,8 +44,8 @@ requiring only the Python standard library and the
 
 This is a rewrite from scratch, using classes to model the turtle
 and the drawing.
-My goal was to make it easier to understand and extend by
-encapsulating the state.
+My goal was to make `jupyturtle` easier to understand and extend by
+encapsulating the state and avoiding code duplication.
 
 I used metaprogramming techniques to build the procedural API
 with global functions like `fd()` to move the turtle.
